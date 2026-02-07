@@ -12,7 +12,8 @@ class KrishiAI:
         api_key = get_gemini_api_key()
         genai.configure(api_key=api_key)
         # Use the same model for both text and vision
-        self.model = genai.GenerativeModel('gemini-1.0-pro')
+        self.model = genai.GenerativeModel('models/gemini-2.0-flash')
+        
     
     def detect_language(self, text):
         """Detect language of input text."""
