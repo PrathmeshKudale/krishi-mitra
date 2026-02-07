@@ -23,6 +23,7 @@ except:
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
+
 # Database Setup
 DB_PATH = "krishi_mitra.db"
 UPLOAD_DIR = "uploads"
