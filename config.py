@@ -63,8 +63,8 @@ os.makedirs(VIDEOS_DIR, exist_ok=True)
 # =============================================================================
 # AI MODEL CONFIGURATION
 # ============================================================================
-GEMINI_MODEL_TEXT = "gemini-pro"
-GEMINI_MODEL_VISION = "gemini-pro-vision"
+GEMINI_MODEL_TEXT = "models/gemini-pro"
+GEMINI_MODEL_VISION = "models/gemini-pro-vision"
 
 
 # =============================================================================
