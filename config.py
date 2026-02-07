@@ -61,14 +61,6 @@ os.makedirs(IMAGES_DIR, exist_ok=True)
 os.makedirs(VIDEOS_DIR, exist_ok=True)
 
 # =============================================================================
-# AI MODEL CONFIGURATION
-# ============================================================================
-GEMINI_MODEL_TEXT = "gemini-1.0-pro"
-GEMINI_MODEL_VISION = "gemini-1.0-pro"
-
-
-
-# =============================================================================
 # APPLICATION METADATA
 # =============================================================================
 APP_NAME = "🌾 Krishi Mitra"
