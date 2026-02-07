@@ -11,9 +11,43 @@ class KrishiAI:
     def __init__(self):
         api_key = get_gemini_api_key()
         genai.configure(api_key=api_key)
-        # Use the same model for both text and vision
-        self.model = genai.GenerativeModel('models/gemini-2.0-flash')
         
+        # Try multiple models in order
+        self.models_to_try = [
+            'models/gemini-2.0-flash-lite',
+            'models/gemini-flash-latest',
+            'models/gemini-2.0-flash-lite-001',
+            'models/gemini-2.5-flash-lite'
+        ]
+        self.current_model_index = 0
+        self.model = genai.GenerativeModel(self.models_to_try[0])
+    
+    def _try_generate(self, prompt, image=None):
+        """Try generating with fallback models."""
+        max_attempts = len(self.models_to_try)
+        
+        for attempt in range(max_attempts):
+            try:
+                model_name = self.models_to_try[self.current_model_index]
+                model = genai.GenerativeModel(model_name)
+                
+                if image:
+                    response = model.generate_content([prompt, image])
+                else:
+                    response = model.generate_content(prompt)
+                
+                return response.text
+                
+            except Exception as e:
+                error_str = str(e)
+                if "429" in error_str or "quota" in error_str.lower():
+                    # Try next model
+                    self.current_model_index = (self.current_model_index + 1) % len(self.models_to_try)
+                    continue
+                else:
+                    return f"Error: {error_str}"
+        
+        return "Error: All models exceeded quota. Please try after 24 hours or use a different API key."
     
     def detect_language(self, text):
         """Detect language of input text."""
@@ -28,8 +62,8 @@ class KrishiAI:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            lang_code = response.text.strip().lower()[:2]
+            response = self._try_generate(prompt)
+            lang_code = response.strip().lower()[:2]
             valid_codes = ['mr', 'hi', 'en', 'gu', 'ta', 'te', 'kn']
             return lang_code if lang_code in valid_codes else 'en'
         except:
@@ -50,11 +84,7 @@ class KrishiAI:
         Farmer's Question: {query}
         """
         
-        try:
-            response = self.model.generate_content(system_prompt)
-            return response.text
-        except Exception as e:
-            return f"Error: {str(e)}"
+        return self._try_generate(system_prompt)
     
     def analyze_crop_image(self, image, farmer_query="", language='en'):
         """Analyze crop image."""
@@ -78,12 +108,7 @@ class KrishiAI:
         5. Care tips
         """
         
-        try:
-            # For vision, use the same model with image
-            response = self.model.generate_content([prompt, image])
-            return response.text
-        except Exception as e:
-            return f"Error analyzing image: {str(e)}"
+        return self._try_generate(prompt, image)
     
     def generate_crop_knowledge(self, crop_name, language='en'):
         """Generate crop lifecycle information."""
@@ -106,11 +131,7 @@ class KrishiAI:
         - Best practices
         """
         
-        try:
-            response = self.model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            return f"Error: {str(e)}"
+        return self._try_generate(prompt)
     
     def get_government_scheme_info(self, query, language='en'):
         """Provide government scheme information."""
@@ -134,11 +155,7 @@ class KrishiAI:
         - Contact information
         """
         
-        try:
-            response = self.model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            return f"Error: {str(e)}"
+        return self._try_generate(prompt)
 
 # Singleton instance
 @st.cache_resource
