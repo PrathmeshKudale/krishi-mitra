@@ -486,10 +486,8 @@ def get_language_code_from_name(lang_name):
                     compressed_image = compress_image(uploaded_file)
                     
                     if compressed_image:
-                        # Detect language from context or default to English
-                        context_lang = 'en'
-                        if additional_context:
-                            context_lang = ai_service.detect_language(additional_context)
+                        # Get selected language from session
+                        context_lang = st.session_state.get('selected_language', 'en')
                         
                         # Get comprehensive analysis
                         analysis = ai_service.analyze_crop_image(
@@ -502,12 +500,15 @@ def get_language_code_from_name(lang_name):
                         st.subheader("📋 Analysis Report")
                         st.markdown(analysis)
                         
+                        # Voice output
                         st.markdown("---")
                         st.subheader("🔊 Listen to Analysis")
                         st.markdown(text_to_speech(analysis, context_lang), unsafe_allow_html=True)
-                        
                     else:
                         st.error("Failed to process image")
+    
+            
+            
     
     # =============================================================================
     # CROP KNOWLEDGE
