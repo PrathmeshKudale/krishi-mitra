@@ -169,19 +169,6 @@ def voice_input_button(key="voice_input"):
     
     return html_code
 
-def get_language_code_from_name(lang_name):
-    """Convert full language name to code."""
-    lang_map = {
-        'English': 'en',
-        'Hindi': 'hi',
-        'Marathi': 'mr',
-        'Gujarati': 'gu',
-        'Tamil': 'ta',
-        'Telugu': 'te',
-        'Kannada': 'kn'
-    }
-    return lang_map.get(lang_name, 'en')
-
 def run_main_app(user):
     """Run main application with all features."""
     
@@ -280,164 +267,125 @@ def run_main_app(user):
         5. **Browse products** from organic farmers near you
         """)
     
-# =============================================================================
-# VOICE AND AUDIO FUNCTIONS
-# =============================================================================
-
-def text_to_speech(text, lang_code='en'):
-    """
-    Convert text to speech using browser's built-in speech synthesis.
-    Returns HTML/JavaScript code.
-    """
-    # Map language codes to speech synthesis codes
-    lang_map = {
-        'en': 'en-IN',
-        'hi': 'hi-IN',
-        'mr': 'mr-IN',
-        'gu': 'gu-IN',
-        'ta': 'ta-IN',
-        'te': 'te-IN',
-        'kn': 'kn-IN'
-    }
-    
-    speech_lang = lang_map.get(lang_code, 'en-IN')
-    
-    # Clean text for JavaScript (remove quotes and newlines)
-    clean_text = text.replace('"', "'").replace('\n', ' ').replace('\r', '')
-    # Limit text length for speech
-    if len(clean_text) > 500:
-        clean_text = clean_text[:500] + "... (text truncated for audio)"
-    
-    html_code = f"""
-    <script>
-    function speakText() {{
-        if ('speechSynthesis' in window) {{
-            // Cancel any ongoing speech
-            window.speechSynthesis.cancel();
-            
-            var text = "{clean_text}";
-            var utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = '{speech_lang}';
-            utterance.rate = 0.9;  // Slightly slower for clarity
-            utterance.pitch = 1;
-            
-            // Try to find appropriate voice
-            var voices = window.speechSynthesis.getVoices();
-            var selectedVoice = voices.find(voice => voice.lang.includes('{speech_lang.split("-")[0]}'));
-            if (selectedVoice) {{
-                utterance.voice = selectedVoice;
-            }}
-            
-            window.speechSynthesis.speak(utterance);
-        }} else {{
-            alert("Sorry, your browser doesn't support text-to-speech!");
-        }}
-    }}
-    
-    // Auto-speak after a short delay
-    setTimeout(speakText, 1000);
-    </script>
-    
-    <button onclick="speakText()" style="
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        margin-top: 10px;
-    ">
-        🔊 Listen Again
-    </button>
-    """
-    
-    return html_code
-
-def voice_input_button(key="voice_input"):
-    """
-    Create a voice input button using Web Speech API.
-    """
-    html_code = """
-    <script>
-    function startVoiceInput() {
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            var recognition = new SpeechRecognition();
-            
-            recognition.lang = document.getElementById('selectedLang')?.value || 'en-IN';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            
-            recognition.onstart = function() {
-                document.getElementById('voiceStatus').innerHTML = '🎤 Listening... Speak now';
-                document.getElementById('voiceStatus').style.color = 'red';
-            };
-            
-            recognition.onresult = function(event) {
-                var transcript = event.results[0][0].transcript;
-                document.getElementById('voiceInputResult').value = transcript;
-                document.getElementById('voiceStatus').innerHTML = '✅ Voice captured! Click Send';
-                document.getElementById('voiceStatus').style.color = 'green';
+    # =============================================================================
+    # AI FARMING ASSISTANT WITH VOICE
+    # =============================================================================
+    elif page == "💬 AI Farming Assistant":
+        st.header("💬 AI Farming Assistant")
+        
+        # Get selected language
+        selected_lang = st.session_state.get('selected_language', 'en')
+        lang_name = get_language_name(selected_lang)
+        
+        st.markdown(f"🌐 Current Language: **{lang_name}**")
+        st.markdown("Ask any farming-related question. You can **type or speak**!")
+        
+        # Voice input section
+        st.markdown("### 🎤 Voice Input")
+        voice_col1, voice_col2 = st.columns([1, 3])
+        
+        with voice_col1:
+            st.markdown(voice_input_button(), unsafe_allow_html=True)
+        
+        with voice_col2:
+            # Hidden text input that will be filled by voice
+            voice_text = st.text_input(
+                "Voice input (hidden)", 
+                key="voice_input_field",
+                label_visibility="collapsed"
+            )
+        
+        st.markdown("---")
+        
+        # Initialize chat history
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
+        
+        # Display chat history with voice buttons
+        for idx, message in enumerate(st.session_state.chat_history):
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
                 
-                // Trigger Streamlit to update
-                var event = new Event('input', { bubbles: true });
-                document.getElementById('voiceInputResult').dispatchEvent(event);
-            };
+                # Add voice button for assistant messages
+                if message["role"] == "assistant":
+                    # Create unique key for each message
+                    voice_key = f"voice_{idx}_{hash(message['content']) % 10000}"
+                    st.markdown(
+                        text_to_speech(message["content"], selected_lang), 
+                        unsafe_allow_html=True
+                    )
+                
+                if "language" in message:
+                    st.caption(f"Language: {get_language_name(message['language'])}")
+        
+        # Text input
+        user_query = st.chat_input("Type your farming question here...")
+        
+        # Use voice input if available
+        if voice_text and voice_text != st.session_state.get('last_voice_text', ''):
+            user_query = voice_text
+            st.session_state.last_voice_text = voice_text
+        
+        if user_query:
+            # Add user message
+            st.session_state.chat_history.append({
+                "role": "user", 
+                "content": user_query
+            })
             
-            recognition.onerror = function(event) {
-                document.getElementById('voiceStatus').innerHTML = '❌ Error: ' + event.error;
-                document.getElementById('voiceStatus').style.color = 'red';
-            };
+            with st.chat_message("user"):
+                st.write(user_query)
             
-            recognition.onend = function() {
-                if (document.getElementById('voiceStatus').innerHTML.includes('Listening')) {
-                    document.getElementById('voiceStatus').innerHTML = '⏹️ Stopped listening';
-                    document.getElementById('voiceStatus').style.color = 'gray';
-                }
-            };
+            # Get response with selected language
+            with st.spinner("🤖 Thinking..."):
+                # Override auto-detection with selected language
+                response = ai_service.get_farming_response(user_query, selected_lang)
             
-            recognition.start();
-        } else {
-            alert('Sorry, voice input is not supported in your browser. Please use Chrome or Edge.');
+            # Add assistant message
+            st.session_state.chat_history.append({
+                "role": "assistant", 
+                "content": response,
+                "language": selected_lang
+            })
+            
+            with st.chat_message("assistant"):
+                st.write(response)
+                # Auto-play voice
+                st.markdown(text_to_speech(response, selected_lang), unsafe_allow_html=True)
+                st.caption(f"Language: {get_language_name(selected_lang)}")
+        
+        # Quick question buttons
+        st.markdown("---")
+        st.subheader("💡 Quick Questions")
+        
+        quick_questions = {
+            'en': ["How to control aphids in cotton?", "Best fertilizer for paddy rice", 
+                   "Organic pest control methods", "Water management in wheat"],
+            'hi': ["कपास में एफिड्स को कैसे नियंत्रित करें?", "धान के लिए सर्वोत्तम उर्वरक",
+                   "जैविक कीट नियंत्रण विधियां", "गेहूं में जल प्रबंधन"],
+            'mr': ["कापसातील अ‍ॅफिड्स कसे नियंत्रित करावे?", "भातासाठी सर्वोत्तम खत",
+                   "सेंद्रिय कीटक नियंत्रण पद्धती", "गहूमध्ये पाणी व्यवस्थापन"],
+            'gu': ["કપાસમાં એફિડ્સને કેવી રીતે નિયંત્રિત કરવા?", "ધાન્ય માટે સર્વોપરિ ખાતર",
+                   "જૈવિક જીવાત નિયંત્રણ પદ્ધતિઓ", "ઘઉંમાં પાણીનું વ્યવસ્થાપન"],
+            'ta': ["பருத்தியில் அஃபிட்களை எவ்வாறு கட்டுப்படுத்துவது?", "நெல்லுக்கு சிறந்த உரம்",
+                   "உயிரியல் பூச்சி கட்டுப்பாட்டு முறைகள்", "கோதுமையில் நீர் மேலாண்மை"],
+            'te': ["పత్తిలో ఎఫిడ్లను ఎలా నియంత్రించాలి?", "వరికి ఉత్తమ ఎరువు",
+                   "సేంద్రీయ పురుగు నియంత్రణ పద్ధతులు", "గోధుమలో నీటి నిర్వహణ"],
+            'kn': ["ಹತ್ತಿಯಲ್ಲಿ ಎಫಿಡ್‌ಗಳನ್ನು ಹೇಗೆ ನಿಯಂತ್ರಿಸುವುದು?", "ಭತ್ತಕ್ಕೆ ಉತ್ತಮ ಗೊಬ್ಬರ",
+                   "ಸಾವಯವ ಕೀಟ ನಿಯಂತ್ರಣ ವಿಧಾನಗಳು", "ಗೋಧಿಯಲ್ಲಿ ನೀರಿನ ವ್ಯವಸ್ಥಾಪನೆ"]
         }
-    }
-    </script>
-    
-    <input type="hidden" id="selectedLang" value="">
-    
-    <button onclick="startVoiceInput()" style="
-        background-color: #FF9800;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        margin-right: 10px;
-    ">
-        🎤 Speak
-    </button>
-    
-    <span id="voiceStatus" style="font-weight: bold;">Click mic to speak</span>
-    
-    <input type="text" id="voiceInputResult" style="display:none;">
-    """
-    
-    return html_code
-
-def get_language_code_from_name(lang_name):
-    """Convert full language name to code."""
-    lang_map = {
-        'English': 'en',
-        'Hindi': 'hi',
-        'Marathi': 'mr',
-        'Gujarati': 'gu',
-        'Tamil': 'ta',
-        'Telugu': 'te',
-        'Kannada': 'kn'
-    }
-    return lang_map.get(lang_name, 'en')
+        
+        questions = quick_questions.get(selected_lang, quick_questions['en'])
+        
+        cols = st.columns(len(questions))
+        for idx, question in enumerate(questions):
+            with cols[idx]:
+                if st.button(question[:20] + "...", key=f"quick_{idx}"):
+                    st.session_state.chat_history.append({
+                        "role": "user", 
+                        "content": question
+                    })
+                    st.rerun()
     
     # =============================================================================
     # CROP DIAGNOSIS
@@ -507,9 +455,6 @@ def get_language_code_from_name(lang_name):
                     else:
                         st.error("Failed to process image")
     
-            
-            
-    
     # =============================================================================
     # CROP KNOWLEDGE
     # =============================================================================
@@ -525,7 +470,7 @@ def get_language_code_from_name(lang_name):
         if st.button("📖 Generate Knowledge", type="primary") and crop_name:
             with st.spinner(f"🌱 Generating comprehensive knowledge for {crop_name}..."):
                 # Detect language from crop name
-                lang = ai_service.detect_language(crop_name)
+                lang = st.session_state.get('selected_language', 'en')
                 knowledge = ai_service.generate_crop_knowledge(crop_name, lang)
                 
                 st.markdown("---")
@@ -542,98 +487,7 @@ def get_language_code_from_name(lang_name):
                         if st.button(suggestion, key=f"rel_{idx}"):
                             st.rerun()
     
-    # =============================================================================
-    # FARMER COMMUNITY
-    # =============================================================================
-    elif page == "👥 Farmer Community":
-        st.header("👥 Farmer Community")
-        
-        tab1, tab2 = st.tabs(["📰 View Posts", "➕ Create Post"])
-        
-        # View Posts Tab
-        with tab1:
-            st.subheader("Recent Community Posts")
-            
-            posts = get_all_posts(limit=20)
-            
-            if not posts:
-                st.info("No posts yet. Be the first to share!")
-            else:
-                for post in posts:
-                    with st.container():
-                        st.markdown(f"""
-                        <div style="background-color:white; border:1px solid #E0E0E0; border-radius:10px; padding:15px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                            <h4>👤 {post['farmer_name']}</h4>
-                            <p>{post['content']}</p>
-                            <small>🕐 {format_datetime(post['created_at'])}</small>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # Display media if exists
-                        if post['image_path'] and os.path.exists(post['image_path']):
-                            st.image(post['image_path'], use_column_width=True)
-                        
-                        if post['video_path'] and os.path.exists(post['video_path']):
-                            st.video(post['video_path'])
-                        
-                        st.markdown("---")
-        
-        # Create Post Tab
-        with tab2:
-            st.subheader("Create New Post")
-            
-            with st.form("post_form"):
-                # Auto-fill farmer name from logged in user
-                farmer_name = st.text_input("Your Name", value=user['farmer_name'])
-                content = st.text_area(
-                    "Share your experience or question", 
-                    placeholder="Share farming tips, ask questions, or post updates..."
-                )
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    image_file = st.file_uploader(
-                        "Attach Photo (Optional)", 
-                        type=['jpg', 'jpeg', 'png']
-                    )
-                with col2:
-                    video_file = st.file_uploader(
-                        "Attach Video (Optional)", 
-                        type=['mp4'],
-                        help="Max 200MB"
-                    )
-                
-                submitted = st.form_submit_button("Post to Community", type="primary")
-                
-                if submitted:
-                    if not content:
-                        st.error("Please enter content!")
-                    else:
-                        # Validate and save files
-                        image_path = None
-                        video_path = None
-                        
-                        if image_file:
-                            is_valid, msg = validate_image(image_file)
-                            if not is_valid:
-                                st.error(f"Image error: {msg}")
-                                st.stop()
-                            image_path = save_uploaded_file(image_file, IMAGES_DIR)
-                        
-                        if video_file:
-                            is_valid, msg = validate_video(video_file)
-                            if not is_valid:
-                                st.error(f"Video error: {msg}")
-                                st.stop()
-                            video_path = save_uploaded_file(video_file, VIDEOS_DIR)
-                        
-                        # Save post
-                        post_id = create_post(farmer_name, content, image_path, video_path)
-                        st.success("Post created successfully!")
-                        st.balloons()
-                        st.rerun()
-    
-    # =============================================================================
+        # =============================================================================
     # GOVERNMENT SCHEMES
     # =============================================================================
     elif page == "🏛️ Government Schemes":
@@ -647,7 +501,7 @@ def get_language_code_from_name(lang_name):
         
         if st.button("🔍 Get Information", type="primary") and scheme_query:
             with st.spinner("🏛️ Fetching scheme details..."):
-                lang = ai_service.detect_language(scheme_query)
+                lang = st.session_state.get('selected_language', 'en')
                 info = ai_service.get_government_scheme_info(scheme_query, lang)
                 
                 st.markdown("---")
@@ -678,6 +532,7 @@ def get_language_code_from_name(lang_name):
                     if st.button(f"Learn about {short_name}", key=f"scheme_{idx}"):
                         st.session_state.scheme_query = short_name
                         st.rerun()
+    
     # =============================================================================
     # ORGANIC PRODUCTS
     # =============================================================================
@@ -756,6 +611,3 @@ def get_language_code_from_name(lang_name):
         <p style="font-size: 0.8rem;">Made with ❤️ for our Annadata (food providers)</p>
     </div>
     """, unsafe_allow_html=True)
-
-    
-    
