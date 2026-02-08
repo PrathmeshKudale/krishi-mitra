@@ -320,62 +320,63 @@ def get_text(key, lang='en'):
 # =============================================================================
 
 def text_to_speech(text, lang_code='en', auto_play=True):
+def text_to_speech(text, lang_code='en', auto_play=False):
     """
-    Text-to-speech using gTTS (Google Text-to-Speech) - Downloads audio file.
-    This works reliably on all devices.
+    Lightweight text-to-speech using browser's built-in speech synthesis.
+    No external libraries needed - fast and no lag!
     """
-    try:
-        from gtts import gTTS
-        import base64
-        from io import BytesIO
+    # Map language codes
+    lang_map = {
+        'en': 'en-IN', 'hi': 'hi-IN', 'mr': 'mr-IN',
+        'gu': 'gu-IN', 'ta': 'ta-IN', 'te': 'te-IN', 'kn': 'kn-IN'
+    }
+    speech_lang = lang_map.get(lang_code, 'en-IN')
+    
+    # Clean text
+    clean_text = text.replace('"', "'").replace('\n', ' ')[:300]
+    
+    # JavaScript for speech synthesis (built into browser)
+    autoplay_js = "window.speechSynthesis.speak(msg);" if auto_play else ""
+    
+    html_code = f"""
+    <div style="margin:10px 0;">
+        <button onclick="speakText()" style="
+            background-color:#4CAF50; 
+            color:white; 
+            padding:10px 20px; 
+            border:none; 
+            border-radius:5px; 
+            cursor:pointer;
+            font-size:16px;
+        ">
+            🔊 {get_text('listen', lang_code)}
+        </button>
+        <p style="font-size:11px; color:#666; margin-top:5px;">
+            Click button to listen in {speech_lang}
+        </p>
+    </div>
+    
+    <script>
+        function speakText() {{
+            if ('speechSynthesis' in window) {{
+                window.speechSynthesis.cancel();
+                var msg = new SpeechSynthesisUtterance("{clean_text}");
+                msg.lang = '{speech_lang}';
+                msg.rate = 0.9;
+                msg.pitch = 1;
+                window.speechSynthesis.speak(msg);
+            }} else {{
+                alert('Your browser does not support speech. Please use Chrome.');
+            }}
+        }}
         
-        # Map language codes
-        lang_map = {
-            'en': 'en', 'hi': 'hi', 'mr': 'mr',
-            'gu': 'gu', 'ta': 'ta', 'te': 'te', 'kn': 'kn'
-        }
-        speech_lang = lang_map.get(lang_code, 'en')
-        
-        # Clean text
-        clean_text = text[:500]  # Limit length
-        
-        # Create gTTS object
-        tts = gTTS(text=clean_text, lang=speech_lang, slow=False)
-        
-        # Save to buffer
-        mp3_fp = BytesIO()
-        tts.write_to_fp(mp3_fp)
-        mp3_fp.seek(0)
-        
-        # Convert to base64
-        audio_bytes = mp3_fp.read()
-        audio_b64 = base64.b64encode(audio_bytes).decode()
-        
-        # Auto-play audio
-        autoplay_attr = "autoplay" if auto_play else ""
-        
-        html_code = f"""
-        <div style="margin:10px 0;">
-            <audio controls {autoplay_attr} style="width:100%; height:40px;">
-                <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mpeg">
-                Your browser does not support audio.
-            </audio>
-            <p style="font-size:11px; color:#666; margin-top:5px;">
-                🔊 {get_text('listen', lang_code)} - Auto-playing
-            </p>
-        </div>
-        """
-        
-        return html_code
-        
-    except Exception as e:
-        # Fallback if gTTS fails
-        return f"""
-        <div style="margin:10px 0; padding:10px; background-color:#FFF3E0; border-radius:5px;">
-            <p>🔊 Audio: {get_text('listen', lang_code)}</p>
-            <p style="font-size:11px; color:#666;">Audio generation failed. Please read the text.</p>
-        </div>
-        """
+        // Auto-play if enabled
+        {autoplay_js}
+    </script>
+    
+    
+    return html_code
+
         
     
 
@@ -617,13 +618,12 @@ def run_main_app(user):
                 "language": selected_lang
             })
             
-            with st.chat_message("assistant"):
+                with st.chat_message("assistant"):
                 st.write(response)
-                # AUTO-PLAY voice immediately for new response
-                st.markdown(text_to_speech(response, selected_lang, auto_play=True), unsafe_allow_html=True)
+                # Manual button - no auto-play (no lag)
+                st.markdown(text_to_speech(response, selected_lang, auto_play=False), unsafe_allow_html=True)
                 st.caption(f"Language: {get_language_name(selected_lang)}")
-        
-        # Quick questions section continues...
+                            
         
     
     
