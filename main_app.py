@@ -396,7 +396,7 @@ def run_main_app(user):
     # =============================================================================
     # HOME PAGE
     # ============================================================================= 
-        if page == get_text('home', selected_lang):
+    if page == get_text('home', selected_lang):
         st.markdown(f'<h1 style="text-align:center; color:#2E7D32;">🌾 Krishi Mitra</h1>', unsafe_allow_html=True)
         st.markdown(f'<h3 style="text-align:center; color:#558B2F;">{get_text("welcome", selected_lang)}, {user["farmer_name"]}!</h3>', unsafe_allow_html=True)
         
