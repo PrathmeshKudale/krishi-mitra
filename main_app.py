@@ -327,7 +327,7 @@ def run_main_app(user):
                             context_lang
                         )
                         
-                                                st.markdown("---")
+                        st.markdown("---")
                         st.subheader("📋 Analysis Report")
                         st.markdown(analysis)
                         
