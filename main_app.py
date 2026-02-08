@@ -319,7 +319,6 @@ def get_text(key, lang='en'):
 # VOICE FUNCTION (Simple Working Version)
 # =============================================================================
 
-def text_to_speech(text, lang_code='en', auto_play=True):
 def text_to_speech(text, lang_code='en', auto_play=False):
     """
     Lightweight text-to-speech using browser's built-in speech synthesis.
@@ -373,10 +372,10 @@ def text_to_speech(text, lang_code='en', auto_play=False):
         // Auto-play if enabled
         {autoplay_js}
     </script>
-"""
-
-return html_code
-
+    """
+    
+    return html_code
+    
         
     
 
