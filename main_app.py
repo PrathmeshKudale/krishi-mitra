@@ -319,43 +319,64 @@ def get_text(key, lang='en'):
 # VOICE FUNCTION (Simple Working Version)
 # =============================================================================
 
-def text_to_speech(text, lang_code='en'):
+def text_to_speech(text, lang_code='en', auto_play=True):
     """
-    Text-to-speech using responsivevoice.org API (works on all devices).
+    Text-to-speech using gTTS (Google Text-to-Speech) - Downloads audio file.
+    This works reliably on all devices.
     """
-    # Map language codes to responsivevoice codes
-    lang_map = {
-        'en': 'UK English Female',
-        'hi': 'Hindi Female',
-        'mr': 'Hindi Female',  # Marathi uses Hindi voice
-        'gu': 'Hindi Female',  # Gujarati uses Hindi voice
-        'ta': 'Tamil Female',
-        'te': 'Telugu Female',
-        'kn': 'Hindi Female'   # Kannada uses Hindi voice
-    }
-    
-    voice = lang_map.get(lang_code, 'UK English Female')
-    
-    # Clean text for JavaScript
-    clean_text = text.replace('"', "'").replace('\n', ' ')[:400]
-    
-    # Use responsivevoice API (free, no key needed)
-    html_code = f"""
-    <div style="margin:10px 0;">
-        <button onclick="responsiveVoice.speak('{clean_text}', '{voice}')" 
-                style="background-color:#4CAF50; color:white; padding:10px 20px; 
-                       border:none; border-radius:5px; cursor:pointer; font-size:16px;">
-            🔊 Click to Listen
-        </button>
-        <p style="font-size:11px; color:#666; margin-top:5px;">
-            Voice: {voice}
-        </p>
-    </div>
-    
-    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
-    """
-    
-    return html_code
+    try:
+        from gtts import gTTS
+        import base64
+        from io import BytesIO
+        
+        # Map language codes
+        lang_map = {
+            'en': 'en', 'hi': 'hi', 'mr': 'mr',
+            'gu': 'gu', 'ta': 'ta', 'te': 'te', 'kn': 'kn'
+        }
+        speech_lang = lang_map.get(lang_code, 'en')
+        
+        # Clean text
+        clean_text = text[:500]  # Limit length
+        
+        # Create gTTS object
+        tts = gTTS(text=clean_text, lang=speech_lang, slow=False)
+        
+        # Save to buffer
+        mp3_fp = BytesIO()
+        tts.write_to_fp(mp3_fp)
+        mp3_fp.seek(0)
+        
+        # Convert to base64
+        audio_bytes = mp3_fp.read()
+        audio_b64 = base64.b64encode(audio_bytes).decode()
+        
+        # Auto-play audio
+        autoplay_attr = "autoplay" if auto_play else ""
+        
+        html_code = f"""
+        <div style="margin:10px 0;">
+            <audio controls {autoplay_attr} style="width:100%; height:40px;">
+                <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mpeg">
+                Your browser does not support audio.
+            </audio>
+            <p style="font-size:11px; color:#666; margin-top:5px;">
+                🔊 {get_text('listen', lang_code)} - Auto-playing
+            </p>
+        </div>
+        """
+        
+        return html_code
+        
+    except Exception as e:
+        # Fallback if gTTS fails
+        return f"""
+        <div style="margin:10px 0; padding:10px; background-color:#FFF3E0; border-radius:5px;">
+            <p>🔊 Audio: {get_text('listen', lang_code)}</p>
+            <p style="font-size:11px; color:#666;">Audio generation failed. Please read the text.</p>
+        </div>
+        """
+        
     
 
 # =============================================================================
@@ -552,7 +573,6 @@ def run_main_app(user):
         </div>
         """, unsafe_allow_html=True)
         
- 
     # =============================================================================
     # AI FARMING ASSISTANT
     # =============================================================================
@@ -571,9 +591,10 @@ def run_main_app(user):
             with st.chat_message(message["role"]):
                 st.write(message["content"])
                 
+                # Add listen button for old messages (manual play for history)
                 if message["role"] == "assistant":
                     if st.button(get_text('listen', selected_lang), key=f"listen_{idx}"):
-                        st.markdown(text_to_speech(message["content"], selected_lang), unsafe_allow_html=True)
+                        st.markdown(text_to_speech(message["content"], selected_lang, auto_play=False), unsafe_allow_html=True)
         
         # Text input
         user_query = st.chat_input(get_text('type_here', selected_lang))
@@ -598,34 +619,13 @@ def run_main_app(user):
             
             with st.chat_message("assistant"):
                 st.write(response)
-                if st.button(get_text('listen', selected_lang), key=f"listen_new_{len(st.session_state.chat_history)}"):
-                    st.markdown(text_to_speech(response, selected_lang), unsafe_allow_html=True)
+                # AUTO-PLAY voice immediately for new response
+                st.markdown(text_to_speech(response, selected_lang, auto_play=True), unsafe_allow_html=True)
+                st.caption(f"Language: {get_language_name(selected_lang)}")
         
-        # Quick questions
-        st.markdown("---")
-        st.subheader(get_text('quick_questions', selected_lang))
+        # Quick questions section continues...
         
-        quick_questions = {
-            'en': ["How to control aphids?", "Best fertilizer for rice", "Organic pest control", "Water management"],
-            'mr': ["अ‍ॅफिड्स कसे नियंत्रित करावे?", "भातासाठी सर्वोत्तम खत", "सेंद्रिय कीटक नियंत्रण", "पाणी व्यवस्थापन"],
-            'hi': ["एफिड्स को कैसे नियंत्रित करें?", "चावल के लिए उर्वरक", "जैविक कीट नियंत्रण", "जल प्रबंधन"],
-            'gu': ["એફિડ્સને કેવી રીતે નિયંત્રિત કરવા?", "ધાન્ય માટે ખાતર", "જૈવિક જીવાત નિયંત્રણ", "પાણીનું વ્યવસ્થાપન"],
-            'ta': ["அஃபிட்களை கட்டுப்படுத்துவது?", "நெல்லுக்கு உரம்", "உயிரியல் பூச்சி கட்டுப்பாடு", "நீர் மேலாண்மை"],
-            'te': ["ఎఫిడ్లను నియంత్రించడం?", "వరికి ఎరువు", "సేంద్రీయ పురుగు నియంత్రణ", "నీటి నిర్వహణ"],
-            'kn': ["ಎಫಿಡ್‌ಗಳನ್ನು ನಿಯಂತ್ರಿಸುವುದು?", "ಭತ್ತಕ್ಕೆ ಗೊಬ್ಬರ", "ಸಾವಯವ ಕೀಟ ನಿಯಂತ್ರಣ", "ನೀರಿನ ವ್ಯವಸ್ಥಾಪನೆ"]
-        }
-        
-        questions = quick_questions.get(selected_lang, quick_questions['en'])
-        
-        cols = st.columns(len(questions))
-        for idx, question in enumerate(questions):
-            with cols[idx]:
-                if st.button(question[:15] + "...", key=f"quick_{idx}"):
-                    st.session_state.chat_history.append({
-                        "role": "user", 
-                        "content": question
-                    })
-                    st.rerun()
+    
     
     # =============================================================================
     # CROP DIAGNOSIS
@@ -674,13 +674,13 @@ def run_main_app(user):
                             additional_context,
                             selected_lang
                         )
-                        
                         st.markdown("---")
                         st.subheader(get_text('analysis_report', selected_lang))
                         st.markdown(analysis)
                         
-                        if st.button(get_text('listen', selected_lang), key="listen_analysis"):
-                            st.markdown(text_to_speech(analysis, selected_lang), unsafe_allow_html=True)
+                        # AUTO-PLAY voice after analysis
+                        st.markdown(text_to_speech(analysis, selected_lang, auto_play=True), unsafe_allow_html=True)
+                        
                     else:
                         st.error("Failed to process image")
     
@@ -889,19 +889,67 @@ def run_main_app(user):
                         product_id = add_product(farmer_name, product_name, quantity, location, phone)
                         st.success("Listed successfully!")
                         st.balloons()
-                        st.rerun()
-      # =============================================================================
-    # FOOTER
+             # =============================================================================
+    # FOOTER - All Languages
     # =============================================================================
+    
+    footer_text = {
+        'en': {
+            'made_with': 'Made with ❤️ for our Annadata',
+            'copyright': '© 2026 Krishi Mitra. Empowering Indian Farmers.',
+            'tagline': 'Your Intelligent Farming Companion'
+        },
+        'mr': {
+            'made_with': 'आमच्या अन्नदात्यांसाठी ❤️ ने बनवले',
+            'copyright': '© २०२६ कृषी मित्र. शेतकऱ्यांना सशक्त बनवणे.',
+            'tagline': 'तुमचे बुद्धिमान शेती सहाय्यक'
+        },
+        'hi': {
+            'made_with': 'हमारे अन्नदाताओं के लिए ❤️ से बनाया गया',
+            'copyright': '© २०२६ कृषि मित्र. किसानों को सशक्त बनाना.',
+            'tagline': 'आपका बुद्धिमान कृषि सहायक'
+        },
+        'gu': {
+            'made_with': 'અમારા અન્નદાતા માટે ❤️ થી બનાવેલ',
+            'copyright': '© ૨૦૨૬ કૃષિ મિત્ર. ખેડૂતોને સશક્ત બનાવવા.',
+            'tagline': 'તમારું બુદ્ધિશાળી કૃષિ સહાયક'
+        },
+        'ta': {
+            'made_with': 'எங்கள் அன்னதாதாக்களுக்காக ❤️ உடன் உருவாக்கப்பட்டது',
+            'copyright': '© २०२६ கிருஷி மித்ரா. விவசாயிகளை வலுப்படுத்துதல்.',
+            'tagline': 'உங்கள் புத்திசாலி விவசாய உதவியாளர்'
+        },
+        'te': {
+            'made_with': 'మా అన్నదాతల కోసం ❤️ తో తయారు చేయబడింది',
+            'copyright': '© २०२६ కృషి మిత్ర. రైతులను సశక్తీకరించడం.',
+            'tagline': 'మీ తెలివైన వ్యవసాయ సహాయకుడు'
+        },
+        'kn': {
+            'made_with': 'ನಮ್ಮ ಅನ್ನದಾತರಿಗಾಗಿ ❤️ ಯೊಂದಿಗೆ ತಯಾರಿಸಲಾಗಿದೆ',
+            'copyright': '© २०२६ ಕೃಷಿ ಮಿತ್ರ. ರೈತರನ್ನು ಸಬಲೀಕರಣಗೊಳಿಸುವುದು.',
+            'tagline': 'ನಿಮ್ಮ ಬುದ್ಧಿವಂತ ಕೃಷಿ ಸಹಾಯಕ'
+        }
+    }
+    
+    ft = footer_text.get(selected_lang, footer_text['en'])
+    
     st.markdown("---")
-    st.markdown("""
-    <div style="text-align: center; color: #666; padding: 20px;">
-        <p style="font-size: 14px;">
-            🌾 <strong>Krishi Mitra</strong> - Made with ❤️ for our Annadata
+    st.markdown(f"""
+    <div style="text-align: center; background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #4CAF50;">
+        <p style="font-size: 24px; margin-bottom: 10px;">🌾</p>
+        <p style="font-size: 18px; color: #1B5E20; margin-bottom: 5px; font-weight: bold;">
+            <strong>Krishi Mitra</strong>
         </p>
-        <p style="font-size: 12px; color: #888;">
-            © 2024 Krishi Mitra. Empowering Indian Farmers.
+        <p style="font-size: 16px; color: #2E7D32; margin-bottom: 5px;">
+            {ft['tagline']}
+        </p>
+        <p style="font-size: 14px; color: #388E3C; margin-bottom: 10px;">
+            {ft['made_with']}
+        </p>
+        <p style="font-size: 12px; color: #666; border-top: 1px solid #A5D6A7; padding-top: 10px; margin-top: 10px;">
+            {ft['copyright']}
         </p>
     </div>
     """, unsafe_allow_html=True)
-
+    st.rerun()
+   
