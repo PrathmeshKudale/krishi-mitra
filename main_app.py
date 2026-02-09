@@ -9,12 +9,7 @@ from datetime import datetime
 import os
 
 from config import APP_NAME, APP_TAGLINE, SUPPORTED_LANGUAGES, IMAGES_DIR, VIDEOS_DIR
-# Use MongoDB instead of SQLite
-from database_mongo import (
-    create_post_mongo, get_all_posts_mongo,
-    add_product_mongo, get_all_products_mongo, search_products_mongo
-)
-
+from database import create_post, get_all_posts, add_product, get_all_products, search_products
 from ai_service import get_ai_service
 from utils import (
     validate_image, validate_video, compress_image, 
@@ -447,7 +442,7 @@ def run_main_app(user):
         st.markdown(f"2. {get_text('feature_2', selected_lang)}")
         st.markdown(f"3. {get_text('feature_3', selected_lang)}")
         st.markdown(f"4. {get_text('feature_4', selected_lang)}")
-        st.markdown(f"5. {get_text('feature_5', selected_lang)}")
+                st.markdown(f"5. {get_text('feature_5', selected_lang)}")
         st.markdown(f"6. {get_text('feature_6', selected_lang)}")
         
         # Feature cards
@@ -671,7 +666,7 @@ def run_main_app(user):
         with tab1:
             st.subheader(get_text('view_posts', selected_lang))
             
-            posts =  get_all_posts_mongo (limit=20)
+            posts = get_all_posts(limit=20)
             
             if not posts:
                 st.info("No posts yet!")
@@ -733,7 +728,7 @@ def run_main_app(user):
                                 st.stop()
                             video_path = save_uploaded_file(video_file, VIDEOS_DIR)
                         
-                        post_id =create_post_mongo  (farmer_name, content, image_path, video_path)
+                        post_id = create_post(farmer_name, content, image_path, video_path)
                         st.success("Posted successfully!")
                         st.balloons()
                         st.rerun()
@@ -795,9 +790,9 @@ def run_main_app(user):
             search = st.text_input(get_text('search', selected_lang))
             
             if search:
-                products = search_products_mongo (search)
+                products = search_products(search)
             else:
-                products = get_all_products_mongo (limit=50)
+                products = get_all_products(limit=50)
             
             if not products:
                 st.info("No products listed yet!")
@@ -838,7 +833,7 @@ def run_main_app(user):
                     elif len(phone) < 10:
                         st.error("Invalid phone number!")
                     else:
-                        product_id =  add_product_mongo (farmer_name, product_name, quantity, location, phone)
+                        product_id = add_product(farmer_name, product_name, quantity, location, phone)
                         st.success("Listed successfully!")
                         st.balloons()
                         st.rerun()
@@ -866,4 +861,4 @@ def run_main_app(user):
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
+                    
