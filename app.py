@@ -1,6 +1,7 @@
 """
 🌾 Krishi Mitra - Intelligent Farming Support Application
 Main Entry Point with Login System
+Supports both SQLite (local) and MongoDB (cloud)
 """
 
 import streamlit as st
@@ -17,37 +18,60 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Database setup for users
+# =============================================================================
+# DATABASE SWITCH - Easy toggle between SQLite and MongoDB
+# =============================================================================
+USE_MONGODB = True  # Set to False for SQLite, True for MongoDB
+
+if USE_MONGODB:
+    # Use MongoDB (Production - Streamlit Cloud)
+    from database_mongo import (
+        create_user_mongo as create_user,
+        verify_user_mongo as verify_user,
+        create_post_mongo as create_post,
+        get_all_posts_mongo as get_all_posts,
+        add_product_mongo as add_product,
+        get_all_products_mongo as get_all_products,
+        search_products_mongo as search_products
+    )
+else:
+    # Use SQLite (Local testing)
+    from database import (
+        create_user, verify_user, create_post,
+        get_all_posts, add_product, get_all_products, search_products
+    )
+
+# Database setup for users (SQLite fallback)
 DB_PATH = "krishi_mitra.db"
 
 def init_user_db():
-    """Initialize user database."""
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            mobile_email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            farmer_name TEXT,
-            location TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    conn.commit()
-    conn.close()
+    """Initialize user database (SQLite fallback)."""
+    if not USE_MONGODB:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mobile_email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                farmer_name TEXT,
+                location TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
 
 def hash_password(password):
     """Hash password for security."""
     return hashlib.sha256(password.encode()).hexdigest()
 
-def register_user(mobile_email, password, farmer_name, location):
-    """Register new user."""
+def register_user_local(mobile_email, password, farmer_name, location):
+    """Register new user (SQLite)."""
     try:
         conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-        
         cursor = conn.cursor()
         
         password_hash = hash_password(password)
@@ -65,8 +89,8 @@ def register_user(mobile_email, password, farmer_name, location):
     except Exception as e:
         return False, f"Error: {str(e)}"
 
-def login_user(mobile_email, password):
-    """Verify login credentials."""
+def login_user_local(mobile_email, password):
+    """Verify login credentials (SQLite)."""
     try:
         conn = sqlite3.connect(DB_PATH, check_same_thread=False)
         cursor = conn.cursor()
@@ -88,8 +112,9 @@ def login_user(mobile_email, password):
     except Exception as e:
         return False, f"Error: {str(e)}"
 
-# Initialize database
-init_user_db()
+# Initialize database (only for SQLite)
+if not USE_MONGODB:
+    init_user_db()
 
 # =============================================================================
 # SESSION STATE
@@ -121,21 +146,12 @@ st.markdown("""
         font-size: 2rem;
         margin-bottom: 20px;
     }
-    .login-input {
-        margin-bottom: 15px;
-    }
     .stButton>button {
         background-color: #4CAF50;
         color: white;
         font-weight: bold;
         width: 100%;
         border-radius: 8px;
-    }
-    .switch-btn {
-        background: none;
-        border: none;
-        color: #1565C0;
-        text-decoration: underline;
     }
     .welcome-banner {
         background-color: #E8F5E9;
@@ -144,8 +160,34 @@ st.markdown("""
         margin-bottom: 20px;
         border-left: 5px solid #4CAF50;
     }
+    .db-badge {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 999;
+    }
+    .db-mongo {
+        background-color: #4CAF50;
+        color: white;
+    }
+    .db-sqlite {
+        background-color: #FF9800;
+        color: white;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# =============================================================================
+# DATABASE BADGE (Show which database is active)
+# =============================================================================
+if USE_MONGODB:
+    st.markdown('<div class="db-badge db-mongo">🍃 MongoDB</div>', unsafe_allow_html=True)
+else:
+    st.markdown('<div class="db-badge db-sqlite">🗄️ SQLite</div>', unsafe_allow_html=True)
 
 # =============================================================================
 # LOGIN PAGE
@@ -178,15 +220,22 @@ def show_login():
             
             if st.button("Login", type="primary"):
                 if mobile_email and password:
-                    success, result = login_user(mobile_email, password)
+                    if USE_MONGODB:
+                        success, result = verify_user(mobile_email, hash_password(password))
+                    else:
+                        success, result = login_user_local(mobile_email, password)
+                    
                     if success:
                         st.session_state.logged_in = True
-                        st.session_state.user = {
-                            "id": result[0],
-                            "mobile_email": result[1],
-                            "farmer_name": result[3],
-                            "location": result[4]
-                        }
+                        if USE_MONGODB:
+                            st.session_state.user = result
+                        else:
+                            st.session_state.user = {
+                                "id": result[0],
+                                "mobile_email": result[1],
+                                "farmer_name": result[3],
+                                "location": result[4]
+                            }
                         st.rerun()
                     else:
                         st.error(result)
@@ -220,7 +269,11 @@ def show_login():
                 elif password != confirm_password:
                     st.error("Passwords do not match!")
                 else:
-                    success, message = register_user(mobile_email, password, farmer_name, location)
+                    if USE_MONGODB:
+                        success, message = create_user(mobile_email, password, farmer_name, location)
+                    else:
+                        success, message = register_user_local(mobile_email, password, farmer_name, location)
+                    
                     if success:
                         st.success(message)
                         st.info("Please login now!")
@@ -251,39 +304,11 @@ def logout():
 if not st.session_state.logged_in:
     show_login()
 else:
-    # LANGUAGE SELECTION
-    if "selected_language" not in st.session_state:
-        st.session_state.selected_language = "en"
-    
-    # Sidebar language selector
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("🌐 Select Language")
-    
-    language_options = {
-        "en": "English",
-        "hi": "हिंदी (Hindi)",
-        "mr": "मराठी (Marathi)",
-        "gu": "ગુજરાતી (Gujarati)",
-        "ta": "தமிழ் (Tamil)",
-        "te": "తెలుగు (Telugu)",
-        "kn": "ಕನ್ನಡ (Kannada)"
-    }
-    
-    selected_lang = st.sidebar.selectbox(
-        "Choose your language",
-        options=list(language_options.keys()),
-        format_func=lambda x: language_options[x],
-        index=list(language_options.keys()).index(st.session_state.selected_language)
-    )
-    
-    st.session_state.selected_language = selected_lang
-    
     # Show welcome banner
     st.markdown(f"""
     <div class="welcome-banner">
         <h4>👋 Welcome, {st.session_state.user['farmer_name']}!</h4>
         <p>📍 {st.session_state.user['location']} | 📱 {st.session_state.user['mobile_email']}</p>
-        <p>🌐 Language: {language_options[st.session_state.selected_language]}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -298,4 +323,4 @@ else:
     # Import and run main app
     from main_app import run_main_app
     run_main_app(st.session_state.user)
-        
+    
