@@ -10,19 +10,19 @@ import streamlit as st
 from config import get_gemini_api_key
 
 class KrishiAI:
-    def __init__(self):
+        def __init__(self):
         api_key = get_gemini_api_key()
-        # New client-based initialization
         self.client = genai.Client(api_key=api_key)
         
-        # Updated model names for new API
+        # CORRECTED: Add 'models/' prefix for new API
         self.models_to_try = [
-            'gemini-2.0-flash-lite',
-            'gemini-2.0-flash',
-            'gemini-1.5-flash',
-            'gemini-1.5-flash-latest'
+            'models/gemini-2.0-flash-lite',
+            'models/gemini-2.0-flash',
+            'models/gemini-1.5-flash',
+            'models/gemini-1.5-flash-latest'
         ]
         self.current_model_index = 0
+    
     
     def _try_generate(self, prompt, image=None):
         """Try generating with fallback models."""
