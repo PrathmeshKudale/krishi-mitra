@@ -11,8 +11,8 @@ from config import get_gemini_api_key
 
 class KrishiAI:
         def __init__(self):
-        api_key = get_gemini_api_key()
-        self.client = genai.Client(api_key=api_key)
+                api_key = get_gemini_api_key()
+                self.client = genai.Client(api_key=api_key)
         
         # CORRECTED: Add 'models/' prefix for new API
         self.models_to_try = [
