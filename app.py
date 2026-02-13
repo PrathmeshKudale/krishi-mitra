@@ -386,3 +386,10 @@ else:
     from main_app import run_main_app
     run_main_app(st.session_state.user)
     
+    # Logout button at bottom
+    st.markdown("---")
+    if st.button("🚪 Logout", type="secondary"):
+        st.session_state.logged_in = False
+        st.session_state.user = None
+        st.rerun()
+        
