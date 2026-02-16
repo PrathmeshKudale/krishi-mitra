@@ -1,0 +1,16 @@
+services:
+  # FastAPI Login Service
+  - type: web
+    name: krishi-mitra-login
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn login_server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: STREAMLIT_URL
+        value: https://your-streamlit-app.streamlit.app
+
+  # Streamlit App (if you want to host on Render too)
+  # Or keep on Streamlit Cloud - your choice
