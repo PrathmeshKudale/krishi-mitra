@@ -23,7 +23,7 @@ ai_service = get_ai_service()
 # Create upload directories
 os.makedirs(IMAGES_DIR, exist_ok=True)
 os.makedirs(VIDEOS_DIR, exist_ok=True)
-
+st.info("👉 [Click here to login](https://krishi-mitra-n48w.onrender.com)")
 # =============================================================================
 # TRANSLATIONS - All UI text in different languages
 # =============================================================================
