@@ -1,4 +1,4 @@
-"""
+y"""
 🌾 Krishi Mitra - Professional Farming Support Application
 """
 
@@ -13,7 +13,7 @@ os.environ["STREAMLIT_SERVER_FILE_WATCHER_TYPE"] = "none"
 st.set_page_config(
     page_title="Krishi Mitra - Farming Assistant",
     page_icon="🌾",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="expanded"    # ← changed to expanded
 )
 # Database setup
