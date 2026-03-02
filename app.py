@@ -412,7 +412,7 @@ def run_main_app(user):
         get_text('home', selected_lang),
         get_text('ai_assistant', selected_lang),
         get_text('crop_diagnosis', selected_lang),
-        get_text('crop_k with all features."""
+        get_text('crop_k with all features."""),
     
     # Get selected language
     selected_lang = st.session_state.get('selected_language', 'en')
