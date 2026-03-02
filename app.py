@@ -7,6 +7,7 @@ import sqlite3
 import hashlib
 from datetime import datetime
 import os
+os.environ["STREAMLIT_SERVER_FILE_WATCHER_TYPE"] = "none"
 
 # Must be first
 st.set_page_config(
