@@ -915,3 +915,205 @@ def run_main_app(user):
         <p>Get complete growing guides, pest management, and harvest tips for any crop.</p>
         </div>
         """, unsafe_allow_html=True)
+        st.markdown(knowledge)
+
+    # ── COMMUNITY ──
+    elif page == get_text('community', selected_lang):
+        st.markdown(f"""
+            <div class="km-page-banner">
+                <h2>{get_text('community', selected_lang)}</h2>
+                <p>Connect, share knowledge, and learn from fellow farmers across India.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        tab1, tab2 = st.tabs([get_text('view_posts', selected_lang), get_text('create_post', selected_lang)])
+
+        with tab1:
+            posts = get_all_posts(limit=20)
+            if not posts:
+                st.markdown("""
+                    <div style="text-align:center; padding:48px; color:#a0bdb3;">
+                        <div style="font-size:48px; margin-bottom:12px;">📰</div>
+                        <div style="font-size:15px; font-weight:600;">No posts yet!</div>
+                        <div style="font-size:13px; margin-top:4px;">Be the first to share your experience.</div>
+                    </div>
+                """, unsafe_allow_html=True)
+            else:
+                for post in posts:
+                    st.markdown(f"""
+                        <div class="km-card">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                                <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#11998e,#38ef7d); display:flex; align-items:center; justify-content:center; font-size:16px; color:white; font-weight:700; flex-shrink:0;">
+                                    {post['farmer_name'][0].upper()}
+                                </div>
+                                <div>
+                                    <div style="font-weight:700; font-size:14px; color:#0a3d2e;">👤 {post['farmer_name']}</div>
+                                    <div style="font-size:11px; color:#a0bdb3;">🕐 {format_datetime(post['created_at'])}</div>
+                                </div>
+                            </div>
+                            <div style="font-size:14px; color:#2d4a3e; line-height:1.6;">{post['content']}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    if post['image_path'] and os.path.exists(post['image_path']):
+                        st.image(post['image_path'], use_column_width=True)
+                    if post['video_path'] and os.path.exists(post['video_path']):
+                        st.video(post['video_path'])
+
+        with tab2:
+            with st.form("post_form"):
+                farmer_name = st.text_input(get_text('your_name', selected_lang), value=user['farmer_name'])
+                content = st.text_area(get_text('share_experience', selected_lang), placeholder="Share your experience...", height=120)
+                col1, col2 = st.columns(2)
+                with col1:
+                    image_file = st.file_uploader(get_text('attach_photo', selected_lang), type=['jpg', 'jpeg', 'png'])
+                with col2:
+                    video_file = st.file_uploader(get_text('attach_video', selected_lang), type=['mp4'])
+
+                submitted = st.form_submit_button(get_text('post', selected_lang), type="primary")
+                if submitted:
+                    if not content:
+                        st.error("Please enter content!")
+                    else:
+                        image_path = None
+                        video_path = None
+                        if image_file:
+                            is_valid, msg = validate_image(image_file)
+                            if not is_valid:
+                                st.error(f"Image error: {msg}")
+                                st.stop()
+                            image_path = save_uploaded_file(image_file, IMAGES_DIR)
+                        if video_file:
+                            is_valid, msg = validate_video(video_file)
+                            if not is_valid:
+                                st.error(f"Video error: {msg}")
+                                st.stop()
+                            video_path = save_uploaded_file(video_file, VIDEOS_DIR)
+                        post_id = create_post(farmer_name, content, image_path, video_path)
+                        st.success("Posted successfully!")
+                        st.balloons()
+                        st.rerun()
+
+    # ── GOVERNMENT SCHEMES ──
+    elif page == get_text('schemes', selected_lang):
+        st.markdown(f"""
+            <div class="km-page-banner">
+                <h2>{get_text('schemes', selected_lang)}</h2>
+                <p>Discover subsidies, loans, and government programs available to farmers.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            scheme_query = st.text_input(get_text('ask_scheme', selected_lang), placeholder="e.g., PM-KISAN, Soil Health Card...")
+        with col2:
+            st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+            search_btn = st.button(get_text('search', selected_lang), type="primary", use_container_width=True)
+
+        if search_btn and scheme_query:
+            with st.spinner("🏛️ Fetching scheme information..."):
+                info = ai_service.get_government_scheme_info(scheme_query, selected_lang)
+                st.markdown(f"""
+                    <div style="background:linear-gradient(135deg,#f0faf5,#e8f5ee); border-radius:16px; padding:20px 24px; border:1px solid #c8e6d4; margin-top:16px;">
+                        <div style="font-size:15px; font-weight:700; color:#0a3d2e; margin-bottom:12px;">🏛️ Scheme Details</div>
+                    </div>
+                """, unsafe_allow_html=True)
+                st.markdown(info)
+
+        st.markdown(f"""<div style="font-size:13px; font-weight:700; color:#0a3d2e; text-transform:uppercase; letter-spacing:0.8px; margin:24px 0 12px;">{get_text('popular_schemes', selected_lang)}</div>""", unsafe_allow_html=True)
+
+        schemes = [
+            ("💰", "PM-KISAN", "Pradhan Mantri Kisan Samman Nidhi"),
+            ("🌱", "Soil Health Card", "Free soil testing scheme"),
+            ("💳", "KCC", "Kisan Credit Card"),
+            ("🛡️", "PMFBY", "Crop Insurance scheme"),
+            ("🌿", "MIDH", "Horticulture Development Mission"),
+            ("🌻", "NMOOP", "National Mission on Oilseeds")
+        ]
+
+        cols = st.columns(3)
+        for idx, (icon, short_name, full_name) in enumerate(schemes):
+            with cols[idx % 3]:
+                st.markdown(f"""
+                    <div class="km-card" style="text-align:center; padding:18px 14px;">
+                        <div style="font-size:28px; margin-bottom:8px;">{icon}</div>
+                        <div style="font-size:14px; font-weight:700; color:#0a3d2e; margin-bottom:4px;">{short_name}</div>
+                        <div style="font-size:11.5px; color:#6b9c80; margin-bottom:10px;">{full_name}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+                if st.button(f"Learn about {short_name}", key=f"scheme_{idx}", use_container_width=True):
+                    st.session_state.scheme_query = short_name
+                    st.rerun()
+
+    # ── ORGANIC PRODUCTS ──
+    elif page == get_text('products', selected_lang):
+        st.markdown(f"""
+            <div class="km-page-banner">
+                <h2>{get_text('products', selected_lang)}</h2>
+                <p>Buy fresh produce directly from farmers or list your own products for sale.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        tab1, tab2 = st.tabs([get_text('browse_products', selected_lang), get_text('list_product', selected_lang)])
+
+        with tab1:
+            search = st.text_input(get_text('search', selected_lang), placeholder="Search products...")
+            if search:
+                products_list = search_products(search)
+            else:
+                products_list = get_all_products(limit=50)
+
+            if not products_list:
+                st.markdown("""
+                    <div style="text-align:center; padding:48px; color:#a0bdb3;">
+                        <div style="font-size:48px; margin-bottom:12px;">🥬</div>
+                        <div style="font-size:15px; font-weight:600;">No products listed yet!</div>
+                    </div>
+                """, unsafe_allow_html=True)
+            else:
+                cols = st.columns(2)
+                for idx, product in enumerate(products_list):
+                    with cols[idx % 2]:
+                        st.markdown(f"""
+                            <div class="km-card">
+                                <div style="font-size:16px; font-weight:700; color:#0a3d2e; margin-bottom:10px;">🥬 {product['product_name']}</div>
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    <div style="font-size:12.5px; color:#2d4a3e;">👤 <strong>Farmer:</strong> {product['farmer_name']}</div>
+                                    <div style="font-size:12.5px; color:#2d4a3e;">📦 <strong>{get_text('quantity', selected_lang)}:</strong> {product['quantity']}</div>
+                                    <div style="font-size:12.5px; color:#2d4a3e;">📍 <strong>{get_text('location', selected_lang)}:</strong> {product['location']}</div>
+                                    <div style="font-size:12.5px; color:#0f8a72; font-weight:600;">📞 {product['phone_number']}</div>
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+
+        with tab2:
+            with st.form("product_form"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    farmer_name = st.text_input(get_text('your_name', selected_lang), value=user['farmer_name'])
+                    product_name = st.text_input(get_text('product_name', selected_lang), placeholder="e.g., Organic Tomatoes")
+                    quantity = st.text_input(get_text('quantity', selected_lang), placeholder="e.g., 50 kg")
+                with col2:
+                    location = st.text_input(get_text('location', selected_lang), value=user['location'])
+                    phone = st.text_input(get_text('phone', selected_lang), value=user['mobile_email'])
+
+                submitted = st.form_submit_button(get_text('list', selected_lang), type="primary")
+                if submitted:
+                    if not all([farmer_name, product_name, quantity, location, phone]):
+                        st.error("Please fill all fields!")
+                    elif len(phone) < 10:
+                        st.error("Invalid phone number!")
+                    else:
+                        product_id = add_product(farmer_name, product_name, quantity, location, phone)
+                        st.success("Listed successfully!")
+                        st.balloons()
+                        st.rerun()
+
+    # ── FOOTER (all pages) ──
+    ft = TRANSLATIONS.get(selected_lang, TRANSLATIONS['en'])
+    st.markdown(f"""
+        <div style="text-align:center; background:white; border-radius:16px; padding:20px 24px; margin-top:32px; border:1px solid #d4ede3;">
+            <span style="font-size:18px;">🌾</span>
+            <span style="font-size:13px; font-weight:700; color:#0a3d2e; margin: 0 8px;">Krishi Mitra</span>
+            <span style="font-size:12px; color:#a0bdb3;">· {ft['made_with_love']} · {ft['copyright']}</span>
+        </div>
+    """, unsafe_allow_html=True)
