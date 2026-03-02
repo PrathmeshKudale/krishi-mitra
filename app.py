@@ -1,4 +1,4 @@
-y"""
+"""
 🌾 Krishi Mitra - Professional Farming Support Application
 """
 
