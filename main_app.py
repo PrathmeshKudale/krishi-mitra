@@ -713,7 +713,7 @@ def run_main_app(user):
 
         st.markdown(f"<div style='font-size:11px; font-weight:700; color:rgba(255,255,255,0.45); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;'>{get_text('select_feature', selected_lang)}</div>", unsafe_allow_html=True)
 
-        page = st.radio("", options=page_options, label_visibility="collapsed")
+        page = st.radio("Navigation", options=page_options, label_visibility="collapsed")
 
         st.markdown("<hr style='border-color:rgba(255,255,255,0.12); margin:14px 0;'>", unsafe_allow_html=True)
 
