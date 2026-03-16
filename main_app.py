@@ -390,6 +390,7 @@ TRANSLATIONS = {
 def get_text(key, lang='en'):
     """Get translated text for given key and language."""
     return TRANSLATIONS.get(lang, TRANSLATIONS['en']).get(key, TRANSLATIONS['en'][key])
+
 # =============================================================================
 # MAIN APP FUNCTION
 # =============================================================================
@@ -401,10 +402,527 @@ def run_main_app(user):
     selected_lang = st.session_state.get('selected_language', 'en')
     
     # =============================================================================
+    # GLOBAL CSS INJECTION - Farming theme with animations
+    # =============================================================================
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap');
+
+    :root {
+        --earth-dark:   #1a3a1f;
+        --leaf-deep:    #2d6a2f;
+        --leaf-mid:     #4a9e4c;
+        --leaf-bright:  #6fcf73;
+        --sun-gold:     #f4b942;
+        --sun-warm:     #f9d56e;
+        --soil-brown:   #7b4f2e;
+        --sky-blue:     #d0eefc;
+        --cream:        #faf7ef;
+        --white:        #ffffff;
+        --shadow-soft:  0 4px 24px rgba(45,106,47,0.13);
+        --shadow-lift:  0 8px 40px rgba(45,106,47,0.22);
+        --radius-card:  18px;
+        --radius-btn:   50px;
+    }
+
+    /* ── Global body ──────────────────────────────────── */
+    html, body, [class*="css"] {
+        font-family: 'Nunito', sans-serif;
+    }
+    .stApp {
+        background: linear-gradient(160deg, #e9f5e3 0%, #f7fdf4 40%, #fffef5 100%);
+        min-height: 100vh;
+    }
+
+    /* ── Animated grain texture overlay ──────────────── */
+    .stApp::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        opacity: 0.5;
+        z-index: 0;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(175deg, #1a3a1f 0%, #2d6a2f 60%, #3d8b3e 100%) !important;
+        border-right: none !important;
+        box-shadow: 4px 0 30px rgba(0,0,0,0.2);
+    }
+    section[data-testid="stSidebar"] * {
+        color: #e8f5e3 !important;
+    }
+    section[data-testid="stSidebar"] .stRadio label {
+        background: rgba(255,255,255,0.06);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin: 4px 0;
+        transition: background 0.25s, transform 0.2s;
+        cursor: pointer;
+        border: 1px solid rgba(255,255,255,0.08);
+        display: block;
+    }
+    section[data-testid="stSidebar"] .stRadio label:hover {
+        background: rgba(255,255,255,0.15);
+        transform: translateX(4px);
+    }
+    section[data-testid="stSidebar"] .stSelectbox select,
+    section[data-testid="stSidebar"] .stSelectbox > div {
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 10px !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+    }
+    section[data-testid="stSidebar"] hr {
+        border-color: rgba(255,255,255,0.15) !important;
+    }
+
+    /* ── Sidebar brand block ──────────────────────────── */
+    .km-sidebar-brand {
+        text-align: center;
+        padding: 20px 10px 10px;
+        animation: fadeSlideDown 0.7s ease both;
+    }
+    .km-sidebar-brand .km-logo-anim {
+        font-size: 48px;
+        display: inline-block;
+        animation: sway 3s ease-in-out infinite;
+        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+    }
+    .km-sidebar-brand h2 {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 1.5rem !important;
+        color: #f9d56e !important;
+        margin: 6px 0 2px !important;
+        letter-spacing: 1px;
+    }
+    .km-sidebar-brand p {
+        font-size: 0.75rem !important;
+        color: #b2d9b3 !important;
+        margin: 0 !important;
+    }
+
+    @keyframes sway {
+        0%,100% { transform: rotate(-5deg); }
+        50%      { transform: rotate(5deg); }
+    }
+    @keyframes fadeSlideDown {
+        from { opacity:0; transform:translateY(-20px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fadeSlideUp {
+        from { opacity:0; transform:translateY(20px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes growIn {
+        from { opacity:0; transform:scale(0.92); }
+        to   { opacity:1; transform:scale(1); }
+    }
+    @keyframes shimmer {
+        0%   { background-position: -200% center; }
+        100% { background-position:  200% center; }
+    }
+    @keyframes float {
+        0%,100% { transform: translateY(0); }
+        50%      { transform: translateY(-6px); }
+    }
+    @keyframes pulse-border {
+        0%,100% { box-shadow: 0 0 0 0 rgba(111,207,115,0.4); }
+        50%      { box-shadow: 0 0 0 8px rgba(111,207,115,0); }
+    }
+
+    /* ── Hero banner ──────────────────────────────────── */
+    .km-hero {
+        background: linear-gradient(135deg, #1a3a1f 0%, #2d6a2f 50%, #4a9e4c 100%);
+        border-radius: 24px;
+        padding: 48px 36px;
+        text-align: center;
+        margin-bottom: 32px;
+        position: relative;
+        overflow: hidden;
+        animation: growIn 0.6s ease both;
+        box-shadow: var(--shadow-lift);
+    }
+    .km-hero::before {
+        content: "🌾🌱🌻🌾🌱🌻🌾🌱🌻🌾";
+        position: absolute;
+        bottom: -10px; left: 0; right: 0;
+        font-size: 2rem;
+        opacity: 0.12;
+        letter-spacing: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .km-hero h1 {
+        font-family: 'Playfair Display', serif !important;
+        font-size: clamp(2rem, 5vw, 3.2rem) !important;
+        color: #f9d56e !important;
+        margin-bottom: 6px !important;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .km-hero h3 {
+        color: #c8e6c9 !important;
+        font-size: 1.15rem !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+    }
+
+    /* ── Feature cards ────────────────────────────────── */
+    .km-feature-card {
+        background: var(--white);
+        border-radius: var(--radius-card);
+        padding: 28px 22px;
+        border: 2px solid #d4ead5;
+        box-shadow: var(--shadow-soft);
+        transition: transform 0.28s cubic-bezier(.34,1.56,.64,1), box-shadow 0.28s;
+        animation: fadeSlideUp 0.5s ease both;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    .km-feature-card::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--leaf-mid), var(--sun-gold));
+        border-radius: 18px 18px 0 0;
+    }
+    .km-feature-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-lift);
+    }
+    .km-feature-card .km-icon {
+        font-size: 2.2rem;
+        display: inline-block;
+        animation: float 3s ease-in-out infinite;
+    }
+    .km-feature-card h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.2rem;
+        color: var(--leaf-deep);
+        margin: 10px 0 6px;
+    }
+    .km-feature-card p {
+        font-size: 0.88rem;
+        color: #555;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* ── Stats / metrics ──────────────────────────────── */
+    [data-testid="metric-container"] {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 20px !important;
+        border: 2px solid #d4ead5;
+        box-shadow: var(--shadow-soft);
+        transition: transform 0.2s;
+        animation: growIn 0.5s ease both;
+    }
+    [data-testid="metric-container"]:hover {
+        transform: translateY(-3px);
+    }
+    [data-testid="stMetricLabel"] { color: var(--leaf-deep) !important; font-weight: 700; }
+    [data-testid="stMetricValue"] {
+        font-family: 'Playfair Display', serif !important;
+        color: var(--leaf-mid) !important;
+        font-size: 2.2rem !important;
+    }
+
+    /* ── Buttons ──────────────────────────────────────── */
+    .stButton > button {
+        border-radius: var(--radius-btn) !important;
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 700 !important;
+        transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important;
+        border: none !important;
+    }
+    .stButton > button[kind="primary"],
+    .stButton > button[data-testid*="primary"] {
+        background: linear-gradient(135deg, #2d6a2f, #6fcf73) !important;
+        color: white !important;
+        box-shadow: 0 4px 18px rgba(45,106,47,0.35) !important;
+        animation: pulse-border 2.5s infinite;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px) scale(1.03) !important;
+        box-shadow: 0 8px 28px rgba(45,106,47,0.4) !important;
+    }
+    .stButton > button:active {
+        transform: scale(0.97) !important;
+    }
+
+    /* ── Text inputs & textareas ──────────────────────── */
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {
+        border-radius: 12px !important;
+        border: 2px solid #c8e6c9 !important;
+        background: #f9fdf9 !important;
+        font-family: 'Nunito', sans-serif !important;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
+    }
+    .stTextInput input:focus, .stTextArea textarea:focus {
+        border-color: var(--leaf-mid) !important;
+        box-shadow: 0 0 0 3px rgba(111,207,115,0.25) !important;
+        outline: none !important;
+    }
+
+    /* ── Headers ──────────────────────────────────────── */
+    h1, h2, h3 {
+        font-family: 'Playfair Display', serif !important;
+    }
+    .stApp h2 { color: var(--leaf-deep) !important; }
+    .stApp h3 { color: var(--leaf-deep) !important; }
+
+    /* ── Page section headers ─────────────────────────── */
+    .stApp [data-testid="stHeader"] {
+        font-family: 'Playfair Display', serif !important;
+    }
+
+    /* ── Community post card ──────────────────────────── */
+    .km-post-card {
+        background: var(--white);
+        border: 1.5px solid #d4ead5;
+        border-radius: var(--radius-card);
+        padding: 22px 20px;
+        margin-bottom: 18px;
+        box-shadow: var(--shadow-soft);
+        transition: transform 0.22s, box-shadow 0.22s;
+        animation: fadeSlideUp 0.4s ease both;
+        position: relative;
+        overflow: hidden;
+    }
+    .km-post-card::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--leaf-mid), var(--sun-gold));
+        border-radius: 18px 0 0 18px;
+    }
+    .km-post-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lift);
+    }
+    .km-post-card h4 {
+        font-family: 'Playfair Display', serif;
+        color: var(--leaf-deep);
+        margin: 0 0 8px;
+        font-size: 1.05rem;
+    }
+    .km-post-card p { color: #333; margin: 0 0 8px; }
+    .km-post-card small { color: #888; font-size: 0.8rem; }
+
+    /* ── Scheme badge card ────────────────────────────── */
+    .km-scheme-card {
+        background: linear-gradient(135deg, #f0f9f0, #e8f5e9);
+        border: 2px solid #a5d6a7;
+        border-radius: 16px;
+        padding: 20px 16px;
+        text-align: center;
+        transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+        animation: growIn 0.45s ease both;
+        cursor: pointer;
+    }
+    .km-scheme-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 12px 32px rgba(45,106,47,0.2);
+    }
+    .km-scheme-card h4 {
+        font-family: 'Playfair Display', serif;
+        color: var(--leaf-deep);
+        font-size: 1.1rem;
+        margin: 0 0 6px;
+    }
+    .km-scheme-card p {
+        font-size: 0.82rem;
+        color: #558b2f;
+        margin: 0;
+    }
+
+    /* ── Product listing card ─────────────────────────── */
+    .km-product-card {
+        background: linear-gradient(135deg, #fffde7, #fff8e1);
+        border: 2px solid #ffe082;
+        border-radius: var(--radius-card);
+        padding: 22px 18px;
+        margin-bottom: 18px;
+        box-shadow: 0 3px 16px rgba(244,185,66,0.18);
+        transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+        animation: fadeSlideUp 0.4s ease both;
+        position: relative;
+    }
+    .km-product-card::after {
+        content: "";
+        position: absolute;
+        top: 0; right: 0;
+        width: 60px; height: 60px;
+        background: radial-gradient(circle at top right, rgba(244,185,66,0.18), transparent 70%);
+        border-radius: 0 18px 0 0;
+    }
+    .km-product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 32px rgba(244,185,66,0.3);
+    }
+    .km-product-card h3 {
+        font-family: 'Playfair Display', serif;
+        color: var(--soil-brown);
+        margin: 0 0 10px;
+        font-size: 1.15rem;
+    }
+    .km-product-card p { color: #5a4020; margin: 4px 0; font-size: 0.9rem; }
+
+    /* ── Footer ───────────────────────────────────────── */
+    .km-footer {
+        background: linear-gradient(135deg, #1a3a1f 0%, #2d6a2f 100%);
+        border-radius: 20px;
+        padding: 32px;
+        text-align: center;
+        margin-top: 28px;
+        box-shadow: var(--shadow-lift);
+        position: relative;
+        overflow: hidden;
+        animation: fadeSlideUp 0.6s ease both;
+    }
+    .km-footer::before {
+        content: "🌾🌱🌾🌱🌾🌱🌾🌱🌾";
+        position: absolute;
+        top: -6px; left: 0; right: 0;
+        font-size: 1.4rem;
+        opacity: 0.15;
+        letter-spacing: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .km-footer .km-footer-logo {
+        font-size: 2.6rem;
+        display: inline-block;
+        animation: sway 3s ease-in-out infinite;
+    }
+    .km-footer h3 {
+        font-family: 'Playfair Display', serif !important;
+        color: #f9d56e !important;
+        font-size: 1.4rem !important;
+        margin: 8px 0 4px !important;
+    }
+    .km-footer .km-tagline { color: #b2d9b3 !important; font-size: 0.95rem; margin: 0 0 6px; }
+    .km-footer .km-love   { color: #c8e6c9 !important; font-size: 0.88rem; margin: 0 0 12px; }
+    .km-footer .km-copy   {
+        color: rgba(255,255,255,0.45) !important;
+        font-size: 0.75rem;
+        border-top: 1px solid rgba(255,255,255,0.12);
+        padding-top: 10px;
+        margin-top: 8px;
+    }
+
+    /* ── Shimmer highlight on section subheaders ──────── */
+    .stApp h2, .stApp [data-testid="stHeader"] {
+        background: linear-gradient(90deg, var(--leaf-deep) 0%, var(--leaf-bright) 50%, var(--leaf-deep) 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 4s linear infinite;
+    }
+
+    /* ── Tabs ─────────────────────────────────────────── */
+    .stTabs [data-baseweb="tab-list"] {
+        background: rgba(45,106,47,0.08);
+        border-radius: 50px;
+        padding: 4px;
+        gap: 4px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 50px !important;
+        font-weight: 700;
+        font-family: 'Nunito', sans-serif;
+        transition: background 0.2s, color 0.2s;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #2d6a2f, #6fcf73) !important;
+        color: white !important;
+    }
+
+    /* ── File uploader ────────────────────────────────── */
+    .stFileUploader {
+        border: 2px dashed #a5d6a7 !important;
+        border-radius: 16px !important;
+        background: #f0faf0 !important;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .stFileUploader:hover {
+        border-color: var(--leaf-mid) !important;
+        background: #e8f5e9 !important;
+    }
+
+    /* ── Chat messages ────────────────────────────────── */
+    [data-testid="stChatMessage"] {
+        background: var(--white) !important;
+        border-radius: 16px !important;
+        border: 1.5px solid #d4ead5 !important;
+        box-shadow: var(--shadow-soft) !important;
+        margin-bottom: 10px !important;
+        animation: fadeSlideUp 0.3s ease both;
+    }
+
+    /* ── Spinner ──────────────────────────────────────── */
+    .stSpinner > div { border-top-color: var(--leaf-mid) !important; }
+
+    /* ── Info / success / error boxes ────────────────── */
+    .stAlert {
+        border-radius: 14px !important;
+        border-left-width: 5px !important;
+        font-family: 'Nunito', sans-serif !important;
+    }
+
+    /* ── Divider ──────────────────────────────────────── */
+    hr {
+        border-color: #c8e6c9 !important;
+        opacity: 0.6;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #f0faf0; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--leaf-mid), var(--sun-gold));
+        border-radius: 10px;
+    }
+
+    /* ── User guide list items ────────────────────────── */
+    .km-guide-item {
+        background: var(--white);
+        border-radius: 14px;
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        border: 1.5px solid #d4ead5;
+        box-shadow: var(--shadow-soft);
+        font-size: 0.95rem;
+        color: #2d4a2e;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        animation: fadeSlideUp 0.4s ease both;
+    }
+    .km-guide-item:hover {
+        transform: translateX(6px);
+        box-shadow: var(--shadow-lift);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # =============================================================================
     # SIDEBAR NAVIGATION
     # =============================================================================
-    st.sidebar.markdown(f"## 🌾 Krishi Mitra")
-    st.sidebar.markdown(f"*{APP_TAGLINE}*")
+    st.sidebar.markdown("""
+    <div class="km-sidebar-brand">
+        <span class="km-logo-anim">🌾</span>
+        <h2>Krishi Mitra</h2>
+        <p>Your Intelligent Farming Companion</p>
+    </div>
+    """, unsafe_allow_html=True)
     st.sidebar.markdown("---")
     
     # Navigation with translated labels
@@ -456,48 +974,36 @@ def run_main_app(user):
     # HOME PAGE
     # =============================================================================
     if page == get_text('home', selected_lang):
-        st.markdown(f'<h1 style="text-align:center; color:#2E7D32;">🌾 Krishi Mitra</h1>', unsafe_allow_html=True)
-        st.markdown(f'<h3 style="text-align:center; color:#558B2F;">{get_text("welcome", selected_lang)}, {user["farmer_name"]}!</h3>', unsafe_allow_html=True)
-        
-        # User Guide
-        st.markdown("---")
+        st.markdown(f"""
+        <div class="km-hero">
+            <h1>&#127806; Krishi Mitra</h1>
+            <h3>{get_text("welcome", selected_lang)}, {user["farmer_name"]}! &#128591;</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.subheader(get_text('user_guide', selected_lang))
-        
-        st.markdown(f"**{get_text('how_to_use', selected_lang)}**")
-        st.markdown(f"1. {get_text('feature_1', selected_lang)}")
-        st.markdown(f"2. {get_text('feature_2', selected_lang)}")
-        st.markdown(f"3. {get_text('feature_3', selected_lang)}")
-        st.markdown(f"4. {get_text('feature_4', selected_lang)}")
-        st.markdown(f"5. {get_text('feature_5', selected_lang)}")
-        st.markdown(f"6. {get_text('feature_6', selected_lang)}")
+        st.markdown(f"<p style='color:#558b2f;font-weight:700;margin-bottom:8px;'>{get_text('how_to_use', selected_lang)}</p>", unsafe_allow_html=True)
+        for i, key in enumerate(['feature_1','feature_2','feature_3','feature_4','feature_5','feature_6'], 1):
+            text = get_text(key, selected_lang)
+            st.markdown(f'<div class="km-guide-item" style="animation-delay:{i*0.07}s"><span style="font-size:1.1rem;min-width:26px;text-align:center">{i}.</span>{text}</div>', unsafe_allow_html=True)
         
         # Feature cards
         st.markdown("---")
         col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown(f"""
-            <div style="background-color:#F1F8E9; padding:20px; border-radius:10px; border-left:5px solid #689F38;">
-                <h3>🤖 {get_text('ai_assistant', selected_lang).split(' ')[1]}</h3>
-                <p>{get_text('ask_question', selected_lang)}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f"""
-            <div style="background-color:#F1F8E9; padding:20px; border-radius:10px; border-left:5px solid #689F38;">
-                <h3>📸 {get_text('crop_diagnosis', selected_lang).split(' ')[1]}</h3>
-                <p>{get_text('upload_image', selected_lang)}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown(f"""
-            <div style="background-color:#F1F8E9; padding:20px; border-radius:10px; border-left:5px solid #689F38;">
-                <h3>👥 {get_text('community', selected_lang).split(' ')[1]}</h3>
-                <p>{get_text('share_experience', selected_lang)}</p>
-            </div>
-            """, unsafe_allow_html=True)
+        cards = [
+            ("🤖", get_text('ai_assistant', selected_lang).split(' ',1)[-1], get_text('ask_question', selected_lang)),
+            ("📸", get_text('crop_diagnosis', selected_lang).split(' ',1)[-1], get_text('upload_image', selected_lang)),
+            ("👥", get_text('community', selected_lang).split(' ',1)[-1], get_text('share_experience', selected_lang)),
+        ]
+        for col, (icon, title, desc) in zip([col1, col2, col3], cards):
+            with col:
+                st.markdown(f"""
+                <div class="km-feature-card">
+                    <div class="km-icon">{icon}</div>
+                    <h3>{title}</h3>
+                    <p>{desc}</p>
+                </div>
+                """, unsafe_allow_html=True)
         
         # Stats
         st.markdown("---")
@@ -519,20 +1025,12 @@ def run_main_app(user):
         st.markdown("---")
         ft = TRANSLATIONS.get(selected_lang, TRANSLATIONS['en'])
         st.markdown(f"""
-        <div style="text-align: center; background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #4CAF50;">
-            <p style="font-size: 24px; margin-bottom: 10px;">🌾</p>
-            <p style="font-size: 18px; color: #1B5E20; margin-bottom: 5px; font-weight: bold;">
-                <strong>Krishi Mitra</strong>
-            </p>
-            <p style="font-size: 16px; color: #2E7D32; margin-bottom: 5px;">
-                {ft['tagline']}
-            </p>
-            <p style="font-size: 14px; color: #388E3C; margin-bottom: 10px;">
-                {ft['made_with_love']}
-            </p>
-            <p style="font-size: 12px; color: #666; border-top: 1px solid #A5D6A7; padding-top: 10px; margin-top: 10px;">
-                {ft['copyright']}
-            </p>
+        <div class="km-footer">
+            <div class="km-footer-logo">&#127806;</div>
+            <h3>Krishi Mitra</h3>
+            <p class="km-tagline">{ft['tagline']}</p>
+            <p class="km-love">{ft['made_with_love']}</p>
+            <p class="km-copy">{ft['copyright']}</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -700,10 +1198,10 @@ def run_main_app(user):
                 for post in posts:
                     with st.container():
                         st.markdown(f"""
-                        <div style="background-color:white; border:1px solid #E0E0E0; border-radius:10px; padding:15px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                            <h4>👤 {post['farmer_name']}</h4>
+                        <div class="km-post-card">
+                            <h4>&#128100; {post['farmer_name']}</h4>
                             <p>{post['content']}</p>
-                            <small>🕐 {format_datetime(post['created_at'])}</small>
+                            <small>&#128336; {format_datetime(post['created_at'])}</small>
                         </div>
                         """, unsafe_allow_html=True)
                         
@@ -793,7 +1291,7 @@ def run_main_app(user):
         for idx, (short_name, full_name) in enumerate(schemes):
             with cols[idx % 3]:
                 st.markdown(f"""
-                <div style="background-color:#E8F5E9; padding:15px; border-radius:8px; border:1px solid #A5D6A7;">
+                <div class="km-scheme-card">
                     <h4>{short_name}</h4>
                     <p>{full_name}</p>
                 </div>
@@ -801,7 +1299,7 @@ def run_main_app(user):
                 if st.button(f"{get_text('search', selected_lang)} {short_name}", key=f"scheme_{idx}"):
                     st.session_state.scheme_query = short_name
                     st.rerun()
-        
+    
     # =============================================================================
     # ORGANIC PRODUCTS - NO VOICE
     # =============================================================================
@@ -827,12 +1325,12 @@ def run_main_app(user):
                 for idx, product in enumerate(products):
                     with cols[idx % 2]:
                         st.markdown(f"""
-                        <div style="background-color:#FFF8E1; border:1px solid #FFE082; border-radius:10px; padding:15px; margin-bottom:15px;">
-                            <h3>🥬 {product['product_name']}</h3>
+                        <div class="km-product-card">
+                            <h3>&#129388; {product['product_name']}</h3>
                             <p><strong>Farmer:</strong> {product['farmer_name']}</p>
                             <p><strong>{get_text('quantity', selected_lang)}:</strong> {product['quantity']}</p>
-                            <p><strong>{get_text('location', selected_lang)}:</strong> 📍 {product['location']}</p>
-                            <p><strong>{get_text('phone', selected_lang)}:</strong> 📞 {product['phone_number']}</p>
+                            <p><strong>{get_text('location', selected_lang)}:</strong> &#128205; {product['location']}</p>
+                            <p><strong>{get_text('phone', selected_lang)}:</strong> &#128222; {product['phone_number']}</p>
                         </div>
                         """, unsafe_allow_html=True)
         
@@ -871,22 +1369,12 @@ def run_main_app(user):
     
     st.markdown("---")
     st.markdown(f"""
-    <div style="text-align: center; background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); padding: 20px; border-radius: 15px; margin-top: 20px; border: 2px solid #4CAF50;">
-        <p style="font-size: 20px; margin-bottom: 8px;">🌾</p>
-        <p style="font-size: 16px; color: #1B5E20; margin-bottom: 5px; font-weight: bold;">
-            <strong>Krishi Mitra</strong>
-        </p>
-        <p style="font-size: 14px; color: #2E7D32; margin-bottom: 5px;">
-            {ft['tagline']}
-        </p>
-        <p style="font-size: 13px; color: #388E3C; margin-bottom: 8px;">
-            {ft['made_with_love']}
-        </p>
-        <p style="font-size: 11px; color: #666; border-top: 1px solid #A5D6A7; padding-top: 8px; margin-top: 8px;">
-            {ft['copyright']}
-        </p>
+    <div class="km-footer">
+        <div class="km-footer-logo">&#127806;</div>
+        <h3>Krishi Mitra</h3>
+        <p class="km-tagline">{ft['tagline']}</p>
+        <p class="km-love">{ft['made_with_love']}</p>
+        <p class="km-copy">{ft['copyright']}</p>
     </div>
     """, unsafe_allow_html=True)
-    
-
-    
+                    
