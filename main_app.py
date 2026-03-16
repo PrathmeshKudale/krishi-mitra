@@ -406,510 +406,940 @@ def run_main_app(user):
     # =============================================================================
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
     :root {
-        --earth-dark:   #1a3a1f;
-        --leaf-deep:    #2d6a2f;
-        --leaf-mid:     #4a9e4c;
-        --leaf-bright:  #6fcf73;
-        --sun-gold:     #f4b942;
-        --sun-warm:     #f9d56e;
-        --soil-brown:   #7b4f2e;
-        --sky-blue:     #d0eefc;
-        --cream:        #faf7ef;
-        --white:        #ffffff;
-        --shadow-soft:  0 4px 24px rgba(45,106,47,0.13);
-        --shadow-lift:  0 8px 40px rgba(45,106,47,0.22);
-        --radius-card:  18px;
-        --radius-btn:   50px;
+        /* Core palette */
+        --earth-dark:    #0d1f10;
+        --leaf-deep:     #1a4d1c;
+        --leaf-mid:      #2d8a30;
+        --leaf-bright:   #4ecb52;
+        --leaf-neon:     #00ff6a;
+        --sun-gold:      #f5a623;
+        --sun-warm:      #ffd166;
+        --sun-glow:      #ffec99;
+        --soil-brown:    #6b3a1f;
+        --cream:         #f5f0e8;
+        --white:         #ffffff;
+        --glass-bg:      rgba(255,255,255,0.07);
+        --glass-border:  rgba(255,255,255,0.15);
+        --glass-bg-light: rgba(255,255,255,0.85);
+        /* Shadows */
+        --shadow-soft:   0 4px 24px rgba(18,78,22,0.15);
+        --shadow-lift:   0 16px 48px rgba(18,78,22,0.28);
+        --shadow-3d:     0 20px 60px rgba(0,0,0,0.4), 0 8px 24px rgba(0,255,106,0.12);
+        --shadow-glow:   0 0 30px rgba(78,203,82,0.4), 0 0 60px rgba(78,203,82,0.15);
+        --shadow-gold:   0 0 20px rgba(245,166,35,0.5), 0 8px 32px rgba(245,166,35,0.25);
+        /* Geometry */
+        --radius-card:   20px;
+        --radius-btn:    50px;
+        --radius-lg:     28px;
+        /* Gradients */
+        --grad-primary:  linear-gradient(135deg, #0d2b10 0%, #1a4d1c 40%, #2d8a30 100%);
+        --grad-gold:     linear-gradient(135deg, #f5a623 0%, #ffd166 100%);
+        --grad-card:     linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+        --grad-glass:    linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03));
     }
 
-    /* ── Global body ──────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       ANIMATED BACKGROUND MESH
+    ═══════════════════════════════════════ */
     html, body, [class*="css"] {
-        font-family: 'Nunito', sans-serif;
+        font-family: 'Space Grotesk', 'Nunito', sans-serif;
     }
     .stApp {
-        background: linear-gradient(160deg, #e9f5e3 0%, #f7fdf4 40%, #fffef5 100%);
+        background: #071209;
         min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
     }
-
-    /* ── Animated grain texture overlay ──────────────── */
     .stApp::before {
         content: "";
         position: fixed;
         inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        background:
+            radial-gradient(ellipse 80% 60% at 10% 20%, rgba(45,138,48,0.18) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 80% at 90% 80%, rgba(13,43,16,0.25) 0%, transparent 60%),
+            radial-gradient(ellipse 100% 100% at 50% 50%, rgba(7,18,9,1) 0%, #071209 100%);
         pointer-events: none;
-        opacity: 0.5;
         z-index: 0;
+        animation: bgShift 12s ease-in-out infinite alternate;
+    }
+    .stApp::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+            radial-gradient(1px 1px at 20% 30%, rgba(78,203,82,0.6) 0%, transparent 100%),
+            radial-gradient(1px 1px at 80% 10%, rgba(245,166,35,0.5) 0%, transparent 100%),
+            radial-gradient(1px 1px at 60% 70%, rgba(78,203,82,0.4) 0%, transparent 100%),
+            radial-gradient(1px 1px at 40% 90%, rgba(255,209,102,0.4) 0%, transparent 100%),
+            radial-gradient(2px 2px at 10% 60%, rgba(78,203,82,0.3) 0%, transparent 100%),
+            radial-gradient(1px 1px at 90% 50%, rgba(245,166,35,0.3) 0%, transparent 100%);
+        pointer-events: none;
+        z-index: 0;
+        animation: starTwinkle 6s ease-in-out infinite alternate;
+    }
+    @keyframes bgShift {
+        0%   { opacity: 1; transform: scale(1); }
+        100% { opacity: 0.85; transform: scale(1.05); }
+    }
+    @keyframes starTwinkle {
+        0%   { opacity: 0.6; }
+        100% { opacity: 1; }
     }
 
-    /* ── Sidebar ──────────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       MAIN CONTENT AREA
+    ═══════════════════════════════════════ */
+    .main .block-container {
+        position: relative;
+        z-index: 1;
+        padding-top: 1rem;
+    }
+
+    /* ═══════════════════════════════════════
+       GLASSMORPHISM SIDEBAR
+    ═══════════════════════════════════════ */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(175deg, #1a3a1f 0%, #2d6a2f 60%, #3d8b3e 100%) !important;
-        border-right: none !important;
-        box-shadow: 4px 0 30px rgba(0,0,0,0.2);
+        background: linear-gradient(175deg,
+            rgba(7,18,9,0.97) 0%,
+            rgba(13,43,16,0.95) 50%,
+            rgba(26,77,28,0.92) 100%) !important;
+        border-right: 1px solid rgba(78,203,82,0.2) !important;
+        box-shadow: 4px 0 40px rgba(0,0,0,0.6), inset -1px 0 0 rgba(78,203,82,0.1) !important;
+        backdrop-filter: blur(20px) !important;
     }
     section[data-testid="stSidebar"] * {
-        color: #e8f5e3 !important;
+        color: #d4f5d5 !important;
     }
     section[data-testid="stSidebar"] .stRadio label {
-        background: rgba(255,255,255,0.06);
-        border-radius: 12px;
-        padding: 10px 14px;
-        margin: 4px 0;
-        transition: background 0.25s, transform 0.2s;
+        background: rgba(78,203,82,0.06);
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin: 5px 0;
+        transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
         cursor: pointer;
-        border: 1px solid rgba(255,255,255,0.08);
+        border: 1px solid rgba(78,203,82,0.1);
         display: block;
+        position: relative;
+        overflow: hidden;
+    }
+    section[data-testid="stSidebar"] .stRadio label::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, #4ecb52, #f5a623);
+        border-radius: 14px 0 0 14px;
+        transform: scaleY(0);
+        transition: transform 0.25s ease;
     }
     section[data-testid="stSidebar"] .stRadio label:hover {
-        background: rgba(255,255,255,0.15);
-        transform: translateX(4px);
+        background: rgba(78,203,82,0.14);
+        transform: translateX(6px);
+        border-color: rgba(78,203,82,0.25);
     }
-    section[data-testid="stSidebar"] .stSelectbox select,
+    section[data-testid="stSidebar"] .stRadio label:hover::before {
+        transform: scaleY(1);
+    }
     section[data-testid="stSidebar"] .stSelectbox > div {
-        background: rgba(255,255,255,0.1) !important;
-        border-radius: 10px !important;
-        border: 1px solid rgba(255,255,255,0.2) !important;
+        background: rgba(78,203,82,0.08) !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(78,203,82,0.2) !important;
     }
     section[data-testid="stSidebar"] hr {
-        border-color: rgba(255,255,255,0.15) !important;
+        border-color: rgba(78,203,82,0.15) !important;
     }
 
-    /* ── Sidebar brand block ──────────────────────────── */
+    /* ── Sidebar Brand ─────────────────────────────────── */
     .km-sidebar-brand {
         text-align: center;
-        padding: 20px 10px 10px;
+        padding: 24px 12px 16px;
         animation: fadeSlideDown 0.7s ease both;
     }
-    .km-sidebar-brand .km-logo-anim {
-        font-size: 48px;
-        display: inline-block;
-        animation: sway 3s ease-in-out infinite;
-        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+    .km-sidebar-brand .km-logo-3d {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 12px;
+        background: linear-gradient(145deg, #2d8a30, #0d2b10);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        box-shadow:
+            0 8px 32px rgba(0,0,0,0.5),
+            0 2px 0 rgba(78,203,82,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.1),
+            inset 0 -2px 4px rgba(0,0,0,0.3);
+        transform: perspective(200px) rotateX(5deg);
+        animation: logoFloat 4s ease-in-out infinite;
+        border: 1px solid rgba(78,203,82,0.3);
     }
     .km-sidebar-brand h2 {
         font-family: 'Playfair Display', serif !important;
-        font-size: 1.5rem !important;
-        color: #f9d56e !important;
-        margin: 6px 0 2px !important;
+        font-size: 1.55rem !important;
+        background: linear-gradient(135deg, #f5a623, #ffd166) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        margin: 0 0 4px !important;
         letter-spacing: 1px;
+        text-shadow: none;
     }
     .km-sidebar-brand p {
-        font-size: 0.75rem !important;
-        color: #b2d9b3 !important;
+        font-size: 0.72rem !important;
+        color: rgba(78,203,82,0.75) !important;
         margin: 0 !important;
+        letter-spacing: 0.5px;
+    }
+    @keyframes logoFloat {
+        0%,100% { transform: perspective(200px) rotateX(5deg) translateY(0px); }
+        50%      { transform: perspective(200px) rotateX(5deg) translateY(-5px); }
     }
 
-    @keyframes sway {
-        0%,100% { transform: rotate(-5deg); }
-        50%      { transform: rotate(5deg); }
-    }
+    /* ═══════════════════════════════════════
+       KEYFRAME ANIMATIONS
+    ═══════════════════════════════════════ */
     @keyframes fadeSlideDown {
-        from { opacity:0; transform:translateY(-20px); }
+        from { opacity:0; transform:translateY(-24px); }
         to   { opacity:1; transform:translateY(0); }
     }
     @keyframes fadeSlideUp {
-        from { opacity:0; transform:translateY(20px); }
+        from { opacity:0; transform:translateY(28px); }
         to   { opacity:1; transform:translateY(0); }
     }
     @keyframes growIn {
-        from { opacity:0; transform:scale(0.92); }
-        to   { opacity:1; transform:scale(1); }
+        from { opacity:0; transform:scale(0.88) translateY(16px); }
+        to   { opacity:1; transform:scale(1) translateY(0); }
     }
-    @keyframes shimmer {
+    @keyframes shimmerText {
         0%   { background-position: -200% center; }
         100% { background-position:  200% center; }
     }
     @keyframes float {
-        0%,100% { transform: translateY(0); }
-        50%      { transform: translateY(-6px); }
+        0%,100% { transform: translateY(0) rotate(0deg); }
+        50%      { transform: translateY(-8px) rotate(3deg); }
     }
-    @keyframes pulse-border {
-        0%,100% { box-shadow: 0 0 0 0 rgba(111,207,115,0.4); }
-        50%      { box-shadow: 0 0 0 8px rgba(111,207,115,0); }
+    @keyframes pulse-glow {
+        0%,100% { box-shadow: 0 0 0 0 rgba(78,203,82,0.4), var(--shadow-lift); }
+        50%      { box-shadow: 0 0 0 10px rgba(78,203,82,0), var(--shadow-lift); }
+    }
+    @keyframes borderGlow {
+        0%,100% { border-color: rgba(78,203,82,0.3); }
+        50%      { border-color: rgba(78,203,82,0.7); }
+    }
+    @keyframes rotate3d {
+        0%   { transform: perspective(600px) rotateY(0deg); }
+        100% { transform: perspective(600px) rotateY(360deg); }
+    }
+    @keyframes cardEntrance {
+        from { opacity:0; transform: perspective(800px) rotateX(15deg) translateY(40px); }
+        to   { opacity:1; transform: perspective(800px) rotateX(0deg) translateY(0); }
+    }
+    @keyframes gradientShift {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
-    /* ── Hero banner ──────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       3D HERO BANNER
+    ═══════════════════════════════════════ */
     .km-hero {
-        background: linear-gradient(135deg, #1a3a1f 0%, #2d6a2f 50%, #4a9e4c 100%);
-        border-radius: 24px;
-        padding: 48px 36px;
+        background: linear-gradient(135deg,
+            #071209 0%,
+            #0d2b10 30%,
+            #1a4d1c 60%,
+            #2d8a30 100%);
+        background-size: 200% 200%;
+        animation: gradientShift 8s ease infinite, growIn 0.6s ease both;
+        border-radius: var(--radius-lg);
+        padding: 60px 40px;
         text-align: center;
-        margin-bottom: 32px;
+        margin-bottom: 36px;
         position: relative;
         overflow: hidden;
-        animation: growIn 0.6s ease both;
-        box-shadow: var(--shadow-lift);
+        box-shadow:
+            0 30px 80px rgba(0,0,0,0.7),
+            0 10px 30px rgba(78,203,82,0.15),
+            inset 0 1px 0 rgba(255,255,255,0.07),
+            inset 0 -4px 12px rgba(0,0,0,0.3);
+        border: 1px solid rgba(78,203,82,0.2);
+        transform: perspective(1200px) rotateX(2deg);
+        transform-origin: 50% 100%;
     }
     .km-hero::before {
-        content: "🌾🌱🌻🌾🌱🌻🌾🌱🌻🌾";
+        content: "";
         position: absolute;
-        bottom: -10px; left: 0; right: 0;
-        font-size: 2rem;
-        opacity: 0.12;
-        letter-spacing: 8px;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 60% 40% at 50% 0%, rgba(78,203,82,0.18) 0%, transparent 70%),
+            radial-gradient(ellipse 40% 60% at 80% 100%, rgba(245,166,35,0.1) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .km-hero::after {
+        content: "🌾  🌱  🌻  🌾  🌱  🌻  🌾";
+        position: absolute;
+        bottom: -8px; left: 0; right: 0;
+        font-size: 1.8rem;
+        opacity: 0.08;
+        letter-spacing: 20px;
         white-space: nowrap;
         overflow: hidden;
+        animation: float 6s ease-in-out infinite;
+    }
+    .km-hero-badge {
+        display: inline-block;
+        background: rgba(78,203,82,0.15);
+        border: 1px solid rgba(78,203,82,0.4);
+        border-radius: 50px;
+        padding: 6px 20px;
+        font-size: 0.75rem;
+        color: #4ecb52;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 18px;
+        font-family: 'Space Grotesk', sans-serif;
     }
     .km-hero h1 {
         font-family: 'Playfair Display', serif !important;
-        font-size: clamp(2rem, 5vw, 3.2rem) !important;
-        color: #f9d56e !important;
-        margin-bottom: 6px !important;
-        text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        font-size: clamp(2.4rem, 6vw, 4rem) !important;
+        background: linear-gradient(135deg, #ffd166 0%, #f5a623 40%, #ffec99 70%, #ffd166 100%) !important;
+        background-size: 200% auto !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        animation: shimmerText 4s linear infinite !important;
+        margin-bottom: 10px !important;
+        line-height: 1.15 !important;
+        filter: drop-shadow(0 4px 16px rgba(245,166,35,0.4));
     }
     .km-hero h3 {
-        color: #c8e6c9 !important;
-        font-size: 1.15rem !important;
-        font-weight: 600 !important;
+        color: rgba(212,245,213,0.85) !important;
+        font-size: 1.2rem !important;
+        font-weight: 500 !important;
         margin: 0 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        letter-spacing: 0.3px;
+    }
+    .km-hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        margin-top: 28px;
+        flex-wrap: wrap;
+    }
+    .km-hero-stat {
+        text-align: center;
+    }
+    .km-hero-stat .num {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        color: #4ecb52;
+        display: block;
+        line-height: 1;
+        text-shadow: 0 0 20px rgba(78,203,82,0.6);
+    }
+    .km-hero-stat .lbl {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.5);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
     }
 
-    /* ── Feature cards ────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       3D FEATURE CARDS
+    ═══════════════════════════════════════ */
     .km-feature-card {
-        background: var(--white);
+        background: linear-gradient(145deg,
+            rgba(255,255,255,0.06) 0%,
+            rgba(255,255,255,0.02) 100%);
         border-radius: var(--radius-card);
-        padding: 28px 22px;
-        border: 2px solid #d4ead5;
-        box-shadow: var(--shadow-soft);
-        transition: transform 0.28s cubic-bezier(.34,1.56,.64,1), box-shadow 0.28s;
-        animation: fadeSlideUp 0.5s ease both;
+        padding: 32px 24px;
+        border: 1px solid rgba(78,203,82,0.2);
+        box-shadow:
+            0 20px 50px rgba(0,0,0,0.5),
+            0 4px 12px rgba(78,203,82,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+        transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+        animation: cardEntrance 0.6s ease both;
         height: 100%;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        transform: perspective(800px) translateZ(0);
+    }
+    .km-feature-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg,
+            #4ecb52 0%,
+            #f5a623 50%,
+            #4ecb52 100%);
+        background-size: 200% auto;
+        animation: shimmerText 3s linear infinite;
+        border-radius: 20px 20px 0 0;
     }
     .km-feature-card::after {
         content: "";
         position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--leaf-mid), var(--sun-gold));
-        border-radius: 18px 18px 0 0;
+        bottom: -50%;
+        right: -20%;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(78,203,82,0.08) 0%, transparent 70%);
+        pointer-events: none;
+        transition: all 0.4s ease;
     }
     .km-feature-card:hover {
-        transform: translateY(-6px);
-        box-shadow: var(--shadow-lift);
+        transform: perspective(800px) translateY(-12px) rotateX(4deg) rotateY(-2deg);
+        box-shadow:
+            0 40px 80px rgba(0,0,0,0.6),
+            0 8px 24px rgba(78,203,82,0.2),
+            inset 0 1px 0 rgba(255,255,255,0.12);
+        border-color: rgba(78,203,82,0.4);
+    }
+    .km-feature-card:hover::after {
+        bottom: -30%;
+        right: -10%;
+        width: 160px;
+        height: 160px;
     }
     .km-feature-card .km-icon {
-        font-size: 2.2rem;
-        display: inline-block;
-        animation: float 3s ease-in-out infinite;
+        font-size: 2.6rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(145deg, rgba(78,203,82,0.15), rgba(78,203,82,0.05));
+        border-radius: 18px;
+        border: 1px solid rgba(78,203,82,0.2);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        animation: float 3.5s ease-in-out infinite;
+        margin-bottom: 4px;
     }
     .km-feature-card h3 {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.2rem;
-        color: var(--leaf-deep);
-        margin: 10px 0 6px;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-size: 1.15rem !important;
+        color: rgba(255,255,255,0.9) !important;
+        margin: 14px 0 8px !important;
+        font-weight: 600 !important;
     }
     .km-feature-card p {
-        font-size: 0.88rem;
-        color: #555;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.45);
         margin: 0;
-        line-height: 1.6;
+        line-height: 1.7;
     }
 
-    /* ── Stats / metrics ──────────────────────────────── */
+    /* ═══════════════════════════════════════
+       METRICS / STATS - 3D STYLE
+    ═══════════════════════════════════════ */
     [data-testid="metric-container"] {
-        background: var(--white);
-        border-radius: 16px;
-        padding: 20px !important;
-        border: 2px solid #d4ead5;
-        box-shadow: var(--shadow-soft);
-        transition: transform 0.2s;
+        background: linear-gradient(145deg,
+            rgba(78,203,82,0.1),
+            rgba(78,203,82,0.03)) !important;
+        border-radius: 18px !important;
+        padding: 24px !important;
+        border: 1px solid rgba(78,203,82,0.2) !important;
+        box-shadow:
+            0 16px 40px rgba(0,0,0,0.4),
+            0 4px 12px rgba(78,203,82,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.06) !important;
+        transition: all 0.3s ease;
         animation: growIn 0.5s ease both;
+        backdrop-filter: blur(8px);
     }
     [data-testid="metric-container"]:hover {
-        transform: translateY(-3px);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow:
+            0 24px 60px rgba(0,0,0,0.5),
+            0 0 30px rgba(78,203,82,0.15) !important;
+        border-color: rgba(78,203,82,0.4) !important;
     }
-    [data-testid="stMetricLabel"] { color: var(--leaf-deep) !important; font-weight: 700; }
+    [data-testid="stMetricLabel"] {
+        color: rgba(78,203,82,0.75) !important;
+        font-weight: 700 !important;
+        font-size: 0.8rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+    }
     [data-testid="stMetricValue"] {
         font-family: 'Playfair Display', serif !important;
-        color: var(--leaf-mid) !important;
-        font-size: 2.2rem !important;
+        color: #ffd166 !important;
+        font-size: 2.6rem !important;
+        text-shadow: 0 0 20px rgba(255,209,102,0.4) !important;
     }
 
-    /* ── Buttons ──────────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       PREMIUM 3D BUTTONS
+    ═══════════════════════════════════════ */
     .stButton > button {
         border-radius: var(--radius-btn) !important;
-        font-family: 'Nunito', sans-serif !important;
+        font-family: 'Space Grotesk', sans-serif !important;
         font-weight: 700 !important;
         transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important;
         border: none !important;
+        position: relative !important;
+        overflow: hidden !important;
+        letter-spacing: 0.5px !important;
+    }
+    .stButton > button::before {
+        content: "" !important;
+        position: absolute !important;
+        inset: 0 !important;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%) !important;
+        border-radius: inherit !important;
+        pointer-events: none !important;
     }
     .stButton > button[kind="primary"],
     .stButton > button[data-testid*="primary"] {
-        background: linear-gradient(135deg, #2d6a2f, #6fcf73) !important;
+        background: linear-gradient(135deg, #1a6d1d 0%, #2d8a30 50%, #4ecb52 100%) !important;
         color: white !important;
-        box-shadow: 0 4px 18px rgba(45,106,47,0.35) !important;
-        animation: pulse-border 2.5s infinite;
+        box-shadow:
+            0 8px 24px rgba(45,138,48,0.5),
+            0 2px 0 rgba(78,203,82,0.6),
+            inset 0 1px 0 rgba(255,255,255,0.25),
+            inset 0 -2px 4px rgba(0,0,0,0.2) !important;
+        animation: pulse-glow 2.5s infinite;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
     }
     .stButton > button:hover {
-        transform: translateY(-2px) scale(1.03) !important;
-        box-shadow: 0 8px 28px rgba(45,106,47,0.4) !important;
+        transform: translateY(-3px) scale(1.04) !important;
+        box-shadow:
+            0 16px 40px rgba(45,138,48,0.6),
+            0 0 24px rgba(78,203,82,0.3) !important;
+        filter: brightness(1.1) !important;
     }
     .stButton > button:active {
-        transform: scale(0.97) !important;
+        transform: translateY(0) scale(0.97) !important;
     }
 
-    /* ── Text inputs & textareas ──────────────────────── */
-    .stTextInput input, .stTextArea textarea, .stSelectbox select {
-        border-radius: 12px !important;
-        border: 2px solid #c8e6c9 !important;
-        background: #f9fdf9 !important;
-        font-family: 'Nunito', sans-serif !important;
-        transition: border-color 0.2s, box-shadow 0.2s !important;
+    /* ═══════════════════════════════════════
+       TEXT INPUTS - GLASSMORPHISM
+    ═══════════════════════════════════════ */
+    .stTextInput input,
+    .stTextArea textarea,
+    .stSelectbox select {
+        border-radius: 14px !important;
+        border: 1px solid rgba(78,203,82,0.2) !important;
+        background: rgba(255,255,255,0.04) !important;
+        color: rgba(255,255,255,0.9) !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        backdrop-filter: blur(8px) !important;
     }
-    .stTextInput input:focus, .stTextArea textarea:focus {
-        border-color: var(--leaf-mid) !important;
-        box-shadow: 0 0 0 3px rgba(111,207,115,0.25) !important;
+    .stTextInput input:focus,
+    .stTextArea textarea:focus {
+        border-color: rgba(78,203,82,0.5) !important;
+        box-shadow:
+            0 0 0 3px rgba(78,203,82,0.15),
+            0 8px 24px rgba(0,0,0,0.3),
+            inset 0 1px 0 rgba(78,203,82,0.1) !important;
+        background: rgba(255,255,255,0.07) !important;
         outline: none !important;
     }
+    .stTextInput input::placeholder,
+    .stTextArea textarea::placeholder {
+        color: rgba(255,255,255,0.3) !important;
+    }
 
-    /* ── Headers ──────────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       TYPOGRAPHY
+    ═══════════════════════════════════════ */
     h1, h2, h3 {
         font-family: 'Playfair Display', serif !important;
     }
-    .stApp h2 { color: var(--leaf-deep) !important; }
-    .stApp h3 { color: var(--leaf-deep) !important; }
-
-    /* ── Page section headers ─────────────────────────── */
-    .stApp [data-testid="stHeader"] {
-        font-family: 'Playfair Display', serif !important;
+    .stApp h2 {
+        background: linear-gradient(135deg, #4ecb52 0%, #a8f5aa 50%, #4ecb52 100%) !important;
+        background-size: 200% auto !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        animation: shimmerText 4s linear infinite !important;
+        font-size: 1.7rem !important;
+        margin-bottom: 16px !important;
     }
+    .stApp h3 {
+        color: rgba(255,255,255,0.85) !important;
+    }
+    p, .stMarkdown p {
+        color: rgba(255,255,255,0.7) !important;
+    }
+    label, .stLabel { color: rgba(255,255,255,0.75) !important; }
 
-    /* ── Community post card ──────────────────────────── */
+    /* ═══════════════════════════════════════
+       3D POST CARD
+    ═══════════════════════════════════════ */
     .km-post-card {
-        background: var(--white);
-        border: 1.5px solid #d4ead5;
+        background: linear-gradient(145deg,
+            rgba(255,255,255,0.06),
+            rgba(255,255,255,0.02));
+        border: 1px solid rgba(78,203,82,0.18);
         border-radius: var(--radius-card);
-        padding: 22px 20px;
-        margin-bottom: 18px;
-        box-shadow: var(--shadow-soft);
-        transition: transform 0.22s, box-shadow 0.22s;
-        animation: fadeSlideUp 0.4s ease both;
+        padding: 24px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+        transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+        animation: fadeSlideUp 0.45s ease both;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(8px);
     }
     .km-post-card::before {
         content: "";
         position: absolute;
         left: 0; top: 0; bottom: 0;
-        width: 4px;
-        background: linear-gradient(180deg, var(--leaf-mid), var(--sun-gold));
-        border-radius: 18px 0 0 18px;
+        width: 3px;
+        background: linear-gradient(180deg, #4ecb52, #f5a623);
+        border-radius: 20px 0 0 20px;
     }
     .km-post-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-lift);
+        transform: translateY(-6px) rotateX(1deg);
+        box-shadow: 0 28px 60px rgba(0,0,0,0.6), 0 0 20px rgba(78,203,82,0.12);
+        border-color: rgba(78,203,82,0.3);
     }
     .km-post-card h4 {
-        font-family: 'Playfair Display', serif;
-        color: var(--leaf-deep);
-        margin: 0 0 8px;
-        font-size: 1.05rem;
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: rgba(255,255,255,0.9) !important;
+        margin: 0 0 10px !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
     }
-    .km-post-card p { color: #333; margin: 0 0 8px; }
-    .km-post-card small { color: #888; font-size: 0.8rem; }
+    .km-post-card p { color: rgba(255,255,255,0.65) !important; margin: 0 0 10px !important; }
+    .km-post-card small { color: rgba(78,203,82,0.6) !important; font-size: 0.78rem !important; }
 
-    /* ── Scheme badge card ────────────────────────────── */
+    /* ═══════════════════════════════════════
+       3D SCHEME BADGE CARD
+    ═══════════════════════════════════════ */
     .km-scheme-card {
-        background: linear-gradient(135deg, #f0f9f0, #e8f5e9);
-        border: 2px solid #a5d6a7;
-        border-radius: 16px;
-        padding: 20px 16px;
+        background: linear-gradient(145deg,
+            rgba(78,203,82,0.1),
+            rgba(78,203,82,0.03));
+        border: 1px solid rgba(78,203,82,0.25);
+        border-radius: 18px;
+        padding: 24px 18px;
         text-align: center;
-        transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+        transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
         animation: growIn 0.45s ease both;
         cursor: pointer;
-    }
-    .km-scheme-card:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 12px 32px rgba(45,106,47,0.2);
-    }
-    .km-scheme-card h4 {
-        font-family: 'Playfair Display', serif;
-        color: var(--leaf-deep);
-        font-size: 1.1rem;
-        margin: 0 0 6px;
-    }
-    .km-scheme-card p {
-        font-size: 0.82rem;
-        color: #558b2f;
-        margin: 0;
-    }
-
-    /* ── Product listing card ─────────────────────────── */
-    .km-product-card {
-        background: linear-gradient(135deg, #fffde7, #fff8e1);
-        border: 2px solid #ffe082;
-        border-radius: var(--radius-card);
-        padding: 22px 18px;
-        margin-bottom: 18px;
-        box-shadow: 0 3px 16px rgba(244,185,66,0.18);
-        transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
-        animation: fadeSlideUp 0.4s ease both;
         position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+        backdrop-filter: blur(8px);
     }
-    .km-product-card::after {
+    .km-scheme-card::after {
         content: "";
         position: absolute;
-        top: 0; right: 0;
-        width: 60px; height: 60px;
-        background: radial-gradient(circle at top right, rgba(244,185,66,0.18), transparent 70%);
-        border-radius: 0 18px 0 0;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(78,203,82,0.6), transparent);
+    }
+    .km-scheme-card:hover {
+        transform: translateY(-8px) scale(1.03) rotateX(3deg);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 30px rgba(78,203,82,0.15);
+        border-color: rgba(78,203,82,0.5);
+    }
+    .km-scheme-card h4 {
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #ffd166 !important;
+        font-size: 1.1rem !important;
+        margin: 0 0 6px !important;
+        font-weight: 700 !important;
+    }
+    .km-scheme-card p {
+        font-size: 0.8rem !important;
+        color: rgba(78,203,82,0.75) !important;
+        margin: 0 !important;
+    }
+
+    /* ═══════════════════════════════════════
+       3D PRODUCT CARD
+    ═══════════════════════════════════════ */
+    .km-product-card {
+        background: linear-gradient(145deg,
+            rgba(245,166,35,0.08),
+            rgba(255,209,102,0.03));
+        border: 1px solid rgba(245,166,35,0.25);
+        border-radius: var(--radius-card);
+        padding: 24px 20px;
+        margin-bottom: 20px;
+        box-shadow:
+            0 16px 40px rgba(0,0,0,0.5),
+            0 4px 12px rgba(245,166,35,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.06);
+        transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+        animation: fadeSlideUp 0.4s ease both;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(8px);
+    }
+    .km-product-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #f5a623, #ffd166, #f5a623);
+        background-size: 200% auto;
+        animation: shimmerText 3s linear infinite;
     }
     .km-product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 32px rgba(244,185,66,0.3);
+        transform: translateY(-8px) rotateX(2deg);
+        box-shadow:
+            0 28px 60px rgba(0,0,0,0.6),
+            0 0 30px rgba(245,166,35,0.15);
+        border-color: rgba(245,166,35,0.5);
     }
     .km-product-card h3 {
-        font-family: 'Playfair Display', serif;
-        color: var(--soil-brown);
-        margin: 0 0 10px;
-        font-size: 1.15rem;
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #ffd166 !important;
+        margin: 0 0 12px !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
     }
-    .km-product-card p { color: #5a4020; margin: 4px 0; font-size: 0.9rem; }
+    .km-product-card p {
+        color: rgba(255,255,255,0.6) !important;
+        margin: 6px 0 !important;
+        font-size: 0.88rem !important;
+    }
+    .km-product-card strong {
+        color: rgba(245,166,35,0.85) !important;
+    }
 
-    /* ── Footer ───────────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       3D FOOTER
+    ═══════════════════════════════════════ */
     .km-footer {
-        background: linear-gradient(135deg, #1a3a1f 0%, #2d6a2f 100%);
-        border-radius: 20px;
-        padding: 32px;
+        background: linear-gradient(135deg,
+            #071209 0%,
+            #0d2b10 50%,
+            #1a4d1c 100%);
+        border-radius: var(--radius-lg);
+        padding: 40px 32px;
         text-align: center;
-        margin-top: 28px;
-        box-shadow: var(--shadow-lift);
+        margin-top: 36px;
+        box-shadow:
+            0 -4px 40px rgba(0,0,0,0.5),
+            0 30px 60px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(78,203,82,0.1);
         position: relative;
         overflow: hidden;
         animation: fadeSlideUp 0.6s ease both;
+        border: 1px solid rgba(78,203,82,0.15);
+        transform: perspective(1200px) rotateX(-1deg);
+        transform-origin: 50% 0%;
     }
     .km-footer::before {
-        content: "🌾🌱🌾🌱🌾🌱🌾🌱🌾";
+        content: "";
         position: absolute;
-        top: -6px; left: 0; right: 0;
-        font-size: 1.4rem;
-        opacity: 0.15;
-        letter-spacing: 10px;
-        white-space: nowrap;
-        overflow: hidden;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(78,203,82,0.6) 30%,
+            rgba(245,166,35,0.6) 70%,
+            transparent 100%);
+    }
+    .km-footer::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(78,203,82,0.06) 0%, transparent 70%);
+        pointer-events: none;
     }
     .km-footer .km-footer-logo {
-        font-size: 2.6rem;
-        display: inline-block;
-        animation: sway 3s ease-in-out infinite;
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 14px;
+        background: linear-gradient(145deg, rgba(78,203,82,0.15), rgba(78,203,82,0.05));
+        border-radius: 20px;
+        border: 1px solid rgba(78,203,82,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 16px rgba(78,203,82,0.15);
+        animation: logoFloat 4s ease-in-out infinite;
     }
     .km-footer h3 {
         font-family: 'Playfair Display', serif !important;
-        color: #f9d56e !important;
-        font-size: 1.4rem !important;
-        margin: 8px 0 4px !important;
+        background: linear-gradient(135deg, #ffd166, #f5a623) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        font-size: 1.5rem !important;
+        margin: 0 0 6px !important;
     }
-    .km-footer .km-tagline { color: #b2d9b3 !important; font-size: 0.95rem; margin: 0 0 6px; }
-    .km-footer .km-love   { color: #c8e6c9 !important; font-size: 0.88rem; margin: 0 0 12px; }
-    .km-footer .km-copy   {
+    .km-footer .km-tagline {
+        color: rgba(78,203,82,0.7) !important;
+        font-size: 0.9rem !important;
+        margin: 0 0 8px !important;
+    }
+    .km-footer .km-love {
         color: rgba(255,255,255,0.45) !important;
-        font-size: 0.75rem;
-        border-top: 1px solid rgba(255,255,255,0.12);
-        padding-top: 10px;
-        margin-top: 8px;
+        font-size: 0.82rem !important;
+        margin: 0 0 14px !important;
+    }
+    .km-footer .km-copy {
+        color: rgba(255,255,255,0.2) !important;
+        font-size: 0.72rem !important;
+        border-top: 1px solid rgba(255,255,255,0.06) !important;
+        padding-top: 12px !important;
+        margin-top: 10px !important;
     }
 
-    /* ── Shimmer highlight on section subheaders ──────── */
-    .stApp h2, .stApp [data-testid="stHeader"] {
-        background: linear-gradient(90deg, var(--leaf-deep) 0%, var(--leaf-bright) 50%, var(--leaf-deep) 100%);
-        background-size: 200% auto;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: shimmer 4s linear infinite;
-    }
-
-    /* ── Tabs ─────────────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       TABS - GLASSMORPHISM
+    ═══════════════════════════════════════ */
     .stTabs [data-baseweb="tab-list"] {
-        background: rgba(45,106,47,0.08);
+        background: rgba(255,255,255,0.04);
         border-radius: 50px;
-        padding: 4px;
+        padding: 5px;
         gap: 4px;
+        border: 1px solid rgba(78,203,82,0.15);
+        backdrop-filter: blur(8px);
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 50px !important;
-        font-weight: 700;
-        font-family: 'Nunito', sans-serif;
-        transition: background 0.2s, color 0.2s;
+        font-weight: 700 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        transition: all 0.25s ease !important;
+        color: rgba(255,255,255,0.5) !important;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #2d6a2f, #6fcf73) !important;
+        background: linear-gradient(135deg, #1a6d1d, #4ecb52) !important;
         color: white !important;
+        box-shadow: 0 4px 16px rgba(45,138,48,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
     }
 
-    /* ── File uploader ────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       FILE UPLOADER
+    ═══════════════════════════════════════ */
     .stFileUploader {
-        border: 2px dashed #a5d6a7 !important;
-        border-radius: 16px !important;
-        background: #f0faf0 !important;
-        transition: border-color 0.2s, background 0.2s;
+        border: 1px dashed rgba(78,203,82,0.3) !important;
+        border-radius: 18px !important;
+        background: rgba(78,203,82,0.04) !important;
+        transition: all 0.25s ease !important;
     }
     .stFileUploader:hover {
-        border-color: var(--leaf-mid) !important;
-        background: #e8f5e9 !important;
+        border-color: rgba(78,203,82,0.6) !important;
+        background: rgba(78,203,82,0.08) !important;
+        box-shadow: 0 0 20px rgba(78,203,82,0.1) !important;
     }
 
-    /* ── Chat messages ────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       CHAT MESSAGES
+    ═══════════════════════════════════════ */
     [data-testid="stChatMessage"] {
-        background: var(--white) !important;
-        border-radius: 16px !important;
-        border: 1.5px solid #d4ead5 !important;
-        box-shadow: var(--shadow-soft) !important;
-        margin-bottom: 10px !important;
-        animation: fadeSlideUp 0.3s ease both;
+        background: rgba(255,255,255,0.04) !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(78,203,82,0.15) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        margin-bottom: 12px !important;
+        animation: fadeSlideUp 0.3s ease both !important;
+        backdrop-filter: blur(8px) !important;
     }
 
-    /* ── Spinner ──────────────────────────────────────── */
-    .stSpinner > div { border-top-color: var(--leaf-mid) !important; }
-
-    /* ── Info / success / error boxes ────────────────── */
+    /* ═══════════════════════════════════════
+       INFO / ALERT BOXES
+    ═══════════════════════════════════════ */
     .stAlert {
-        border-radius: 14px !important;
-        border-left-width: 5px !important;
-        font-family: 'Nunito', sans-serif !important;
+        border-radius: 16px !important;
+        border-left-width: 4px !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        background: rgba(255,255,255,0.04) !important;
+        backdrop-filter: blur(8px) !important;
     }
 
-    /* ── Divider ──────────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       DIVIDERS
+    ═══════════════════════════════════════ */
     hr {
-        border-color: #c8e6c9 !important;
-        opacity: 0.6;
+        border: none !important;
+        height: 1px !important;
+        background: linear-gradient(90deg,
+            transparent,
+            rgba(78,203,82,0.3) 30%,
+            rgba(245,166,35,0.3) 70%,
+            transparent) !important;
+        margin: 24px 0 !important;
     }
 
-    /* ── Scrollbar ────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 7px; height: 7px; }
-    ::-webkit-scrollbar-track { background: #f0faf0; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, var(--leaf-mid), var(--sun-gold));
+    /* ═══════════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.03);
         border-radius: 10px;
     }
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #4ecb52, #f5a623);
+        border-radius: 10px;
+        box-shadow: 0 0 8px rgba(78,203,82,0.3);
+    }
 
-    /* ── User guide list items ────────────────────────── */
+    /* ═══════════════════════════════════════
+       GUIDE ITEMS
+    ═══════════════════════════════════════ */
     .km-guide-item {
-        background: var(--white);
+        background: rgba(255,255,255,0.04);
         border-radius: 14px;
         padding: 14px 18px;
         margin-bottom: 10px;
-        border: 1.5px solid #d4ead5;
-        box-shadow: var(--shadow-soft);
-        font-size: 0.95rem;
-        color: #2d4a2e;
+        border: 1px solid rgba(78,203,82,0.15);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+        font-size: 0.92rem;
+        color: rgba(255,255,255,0.7) !important;
         display: flex;
         align-items: center;
-        gap: 10px;
-        transition: transform 0.2s, box-shadow 0.2s;
+        gap: 12px;
+        transition: all 0.25s ease;
         animation: fadeSlideUp 0.4s ease both;
+        backdrop-filter: blur(6px);
     }
     .km-guide-item:hover {
-        transform: translateX(6px);
-        box-shadow: var(--shadow-lift);
+        transform: translateX(8px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.35), 0 0 16px rgba(78,203,82,0.08);
+        border-color: rgba(78,203,82,0.3);
+        background: rgba(78,203,82,0.06);
     }
+    .km-guide-item .num {
+        background: linear-gradient(135deg, #2d8a30, #4ecb52);
+        color: white;
+        font-weight: 800;
+        min-width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        box-shadow: 0 4px 12px rgba(45,138,48,0.4);
+        flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════
+       SPINNER
+    ═══════════════════════════════════════ */
+    .stSpinner > div { border-top-color: #4ecb52 !important; }
+
+    /* ═══════════════════════════════════════
+       CAPTION / SMALL TEXT
+    ═══════════════════════════════════════ */
+    .stCaption, caption, .stMarkdown small {
+        color: rgba(255,255,255,0.4) !important;
+    }
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -918,7 +1348,7 @@ def run_main_app(user):
     # =============================================================================
     st.sidebar.markdown("""
     <div class="km-sidebar-brand">
-        <span class="km-logo-anim">🌾</span>
+        <div class="km-logo-3d">🌾</div>
         <h2>Krishi Mitra</h2>
         <p>Your Intelligent Farming Companion</p>
     </div>
@@ -974,10 +1404,31 @@ def run_main_app(user):
     # HOME PAGE
     # =============================================================================
     if page == get_text('home', selected_lang):
+        posts_count = len(get_all_posts(limit=1000))
+        products_count = len(get_all_products(limit=1000))
         st.markdown(f"""
         <div class="km-hero">
+            <div class="km-hero-badge">&#127807; AI-Powered Farming Platform</div>
             <h1>&#127806; Krishi Mitra</h1>
             <h3>{get_text("welcome", selected_lang)}, {user["farmer_name"]}! &#128591;</h3>
+            <div class="km-hero-stats">
+                <div class="km-hero-stat">
+                    <span class="num">{posts_count}</span>
+                    <span class="lbl">Community Posts</span>
+                </div>
+                <div class="km-hero-stat">
+                    <span class="num">{products_count}</span>
+                    <span class="lbl">Products Listed</span>
+                </div>
+                <div class="km-hero-stat">
+                    <span class="num">7</span>
+                    <span class="lbl">Languages</span>
+                </div>
+                <div class="km-hero-stat">
+                    <span class="num">AI</span>
+                    <span class="lbl">Powered</span>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -985,7 +1436,7 @@ def run_main_app(user):
         st.markdown(f"<p style='color:#558b2f;font-weight:700;margin-bottom:8px;'>{get_text('how_to_use', selected_lang)}</p>", unsafe_allow_html=True)
         for i, key in enumerate(['feature_1','feature_2','feature_3','feature_4','feature_5','feature_6'], 1):
             text = get_text(key, selected_lang)
-            st.markdown(f'<div class="km-guide-item" style="animation-delay:{i*0.07}s"><span style="font-size:1.1rem;min-width:26px;text-align:center">{i}.</span>{text}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="km-guide-item" style="animation-delay:{i*0.07}s"><span class="num">{i}</span>{text}</div>', unsafe_allow_html=True)
         
         # Feature cards
         st.markdown("---")
@@ -1033,6 +1484,7 @@ def run_main_app(user):
             <p class="km-copy">{ft['copyright']}</p>
         </div>
         """, unsafe_allow_html=True)
+        return
     
     # =============================================================================
     # AI FARMING ASSISTANT - NO VOICE
