@@ -1,7 +1,6 @@
 """
 🌾 Krishi Mitra - Main Application Features
 Multi-language UI support - NO VOICE for smooth performance
-✨ ENHANCED: Full 3D / Glassmorphism / Depth UI
 """
 
 import streamlit as st
@@ -13,7 +12,7 @@ from config import APP_NAME, APP_TAGLINE, SUPPORTED_LANGUAGES, IMAGES_DIR, VIDEO
 from database import create_post, get_all_posts, add_product, get_all_products, search_products
 from ai_service import get_ai_service
 from utils import (
-    validate_image, validate_video, compress_image,
+    validate_image, validate_video, compress_image, 
     save_uploaded_file, get_language_name, format_datetime
 )
 
@@ -388,11 +387,9 @@ TRANSLATIONS = {
     }
 }
 
-
 def get_text(key, lang='en'):
     """Get translated text for given key and language."""
     return TRANSLATIONS.get(lang, TRANSLATIONS['en']).get(key, TRANSLATIONS['en'][key])
-
 
 # =============================================================================
 # MAIN APP FUNCTION
@@ -400,941 +397,964 @@ def get_text(key, lang='en'):
 
 def run_main_app(user):
     """Run main application with all features."""
-
+    
     # Get selected language
     selected_lang = st.session_state.get('selected_language', 'en')
-
-    # =========================================================================
-    # ✨ ENHANCED 3D GLOBAL CSS — Glassmorphism + Depth + Perspective
-    # =========================================================================
+    
+    # =============================================================================
+    # GLOBAL CSS INJECTION - Farming theme with animations
+    # =============================================================================
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-    /* ── CSS Variables ─────────────────────────────────── */
     :root {
-        --earth-dark:      #0d2210;
-        --leaf-deep:       #1b5e20;
-        --leaf-mid:        #388e3c;
-        --leaf-bright:     #66bb6a;
-        --leaf-neon:       #a5d6a7;
-        --sun-gold:        #f9a825;
-        --sun-warm:        #ffd54f;
-        --sun-glow:        #ffe082;
-        --soil-brown:      #6d4c41;
-        --sky-blue:        #b3e5fc;
-        --cream:           #faf7ef;
-        --white:           #ffffff;
-
-        /* 3D Depth shadows */
-        --shadow-soft:     0 4px 20px rgba(27,94,32,0.12), 0 1px 4px rgba(0,0,0,0.06);
-        --shadow-lift:     0 12px 48px rgba(27,94,32,0.22), 0 4px 12px rgba(0,0,0,0.10);
-        --shadow-deep:     0 24px 64px rgba(13,34,16,0.35), 0 8px 24px rgba(0,0,0,0.15);
-        --shadow-3d:       0 2px 0 rgba(255,255,255,0.5) inset,
-                           0 -4px 0 rgba(0,0,0,0.15) inset,
-                           0 8px 32px rgba(27,94,32,0.20);
-        --shadow-gold:     0 8px 32px rgba(249,168,37,0.30), 0 2px 8px rgba(249,168,37,0.15);
-
-        /* Glass */
-        --glass-bg:        rgba(255,255,255,0.60);
-        --glass-border:    rgba(255,255,255,0.80);
-        --glass-blur:      blur(16px) saturate(1.6);
-
-        /* Radius */
-        --radius-card:     20px;
-        --radius-btn:      50px;
-
-        /* Perspective for 3D cards */
-        --perspective:     1000px;
+        /* Core palette */
+        --earth-dark:    #0d1f10;
+        --leaf-deep:     #1a4d1c;
+        --leaf-mid:      #2d8a30;
+        --leaf-bright:   #4ecb52;
+        --leaf-neon:     #00ff6a;
+        --sun-gold:      #f5a623;
+        --sun-warm:      #ffd166;
+        --sun-glow:      #ffec99;
+        --soil-brown:    #6b3a1f;
+        --cream:         #f5f0e8;
+        --white:         #ffffff;
+        --glass-bg:      rgba(255,255,255,0.07);
+        --glass-border:  rgba(255,255,255,0.15);
+        --glass-bg-light: rgba(255,255,255,0.85);
+        /* Shadows */
+        --shadow-soft:   0 4px 24px rgba(18,78,22,0.15);
+        --shadow-lift:   0 16px 48px rgba(18,78,22,0.28);
+        --shadow-3d:     0 20px 60px rgba(0,0,0,0.4), 0 8px 24px rgba(0,255,106,0.12);
+        --shadow-glow:   0 0 30px rgba(78,203,82,0.4), 0 0 60px rgba(78,203,82,0.15);
+        --shadow-gold:   0 0 20px rgba(245,166,35,0.5), 0 8px 32px rgba(245,166,35,0.25);
+        /* Geometry */
+        --radius-card:   20px;
+        --radius-btn:    50px;
+        --radius-lg:     28px;
+        /* Gradients */
+        --grad-primary:  linear-gradient(135deg, #0d2b10 0%, #1a4d1c 40%, #2d8a30 100%);
+        --grad-gold:     linear-gradient(135deg, #f5a623 0%, #ffd166 100%);
+        --grad-card:     linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+        --grad-glass:    linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03));
     }
 
-    /* ── Global body ──────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       ANIMATED BACKGROUND MESH
+    ═══════════════════════════════════════ */
     html, body, [class*="css"] {
-        font-family: 'Nunito', sans-serif;
+        font-family: 'Space Grotesk', 'Nunito', sans-serif;
     }
-
-    /* ── Animated 3D background ───────────────────────── */
     .stApp {
-        background:
-            radial-gradient(ellipse at 20% 10%, rgba(102,187,106,0.18) 0%, transparent 55%),
-            radial-gradient(ellipse at 80% 90%, rgba(249,168,37,0.14) 0%, transparent 55%),
-            radial-gradient(ellipse at 60% 40%, rgba(27,94,32,0.10) 0%, transparent 50%),
-            linear-gradient(160deg, #dff0dc 0%, #f0faf0 35%, #fffef5 70%, #fff8e1 100%);
+        background: #071209;
         min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
     }
-
-    /* Grain texture */
     .stApp::before {
         content: "";
         position: fixed;
         inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+        background:
+            radial-gradient(ellipse 80% 60% at 10% 20%, rgba(45,138,48,0.18) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 80% at 90% 80%, rgba(13,43,16,0.25) 0%, transparent 60%),
+            radial-gradient(ellipse 100% 100% at 50% 50%, rgba(7,18,9,1) 0%, #071209 100%);
         pointer-events: none;
         z-index: 0;
+        animation: bgShift 12s ease-in-out infinite alternate;
     }
-
-    /* ── Floating orbs (background decoration) ────────── */
     .stApp::after {
         content: "";
         position: fixed;
-        width: 600px; height: 600px;
-        top: -200px; right: -200px;
-        background: radial-gradient(circle, rgba(102,187,106,0.10) 0%, transparent 70%);
-        border-radius: 50%;
+        inset: 0;
+        background-image:
+            radial-gradient(1px 1px at 20% 30%, rgba(78,203,82,0.6) 0%, transparent 100%),
+            radial-gradient(1px 1px at 80% 10%, rgba(245,166,35,0.5) 0%, transparent 100%),
+            radial-gradient(1px 1px at 60% 70%, rgba(78,203,82,0.4) 0%, transparent 100%),
+            radial-gradient(1px 1px at 40% 90%, rgba(255,209,102,0.4) 0%, transparent 100%),
+            radial-gradient(2px 2px at 10% 60%, rgba(78,203,82,0.3) 0%, transparent 100%),
+            radial-gradient(1px 1px at 90% 50%, rgba(245,166,35,0.3) 0%, transparent 100%);
         pointer-events: none;
-        animation: orbDrift 18s ease-in-out infinite alternate;
         z-index: 0;
+        animation: starTwinkle 6s ease-in-out infinite alternate;
+    }
+    @keyframes bgShift {
+        0%   { opacity: 1; transform: scale(1); }
+        100% { opacity: 0.85; transform: scale(1.05); }
+    }
+    @keyframes starTwinkle {
+        0%   { opacity: 0.6; }
+        100% { opacity: 1; }
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── KEYFRAMES ─────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
-    @keyframes orbDrift {
-        from { transform: translate(0,0) scale(1); }
-        to   { transform: translate(-80px, 60px) scale(1.2); }
-    }
-    @keyframes sway {
-        0%,100% { transform: rotate(-6deg) scale(1); }
-        50%      { transform: rotate(6deg)  scale(1.05); }
-    }
-    @keyframes fadeSlideDown {
-        from { opacity:0; transform:translateY(-30px) rotateX(10deg); }
-        to   { opacity:1; transform:translateY(0)     rotateX(0); }
-    }
-    @keyframes fadeSlideUp {
-        from { opacity:0; transform:translateY(30px) rotateX(-8deg); }
-        to   { opacity:1; transform:translateY(0)    rotateX(0); }
-    }
-    @keyframes growIn3D {
-        from { opacity:0; transform:scale(0.88) rotateX(12deg); }
-        to   { opacity:1; transform:scale(1)    rotateX(0); }
-    }
-    @keyframes shimmer {
-        0%   { background-position: -300% center; }
-        100% { background-position:  300% center; }
-    }
-    @keyframes float3D {
-        0%,100% { transform: translateY(0)    rotateZ(0deg); }
-        33%      { transform: translateY(-8px) rotateZ(2deg); }
-        66%      { transform: translateY(-4px) rotateZ(-1deg); }
-    }
-    @keyframes pulseGlow {
-        0%,100% { box-shadow: 0 0 0 0  rgba(102,187,106,0.50), var(--shadow-lift); }
-        50%      { box-shadow: 0 0 0 12px rgba(102,187,106,0),  var(--shadow-lift); }
-    }
-    @keyframes goldPulse {
-        0%,100% { box-shadow: var(--shadow-gold); }
-        50%      { box-shadow: 0 16px 48px rgba(249,168,37,0.50), 0 4px 16px rgba(249,168,37,0.30); }
-    }
-    @keyframes borderRun {
-        0%   { background-position:   0% 50%; }
-        50%  { background-position: 100% 50%; }
-        100% { background-position:   0% 50%; }
-    }
-    @keyframes slideRight {
-        from { transform: translateX(0); }
-        to   { transform: translateX(8px); }
-    }
-    @keyframes heroParticle {
-        0%   { transform: translateY(0)    translateX(0)   scale(1);   opacity:0.6; }
-        50%  { transform: translateY(-40px) translateX(15px) scale(1.3); opacity:0.9; }
-        100% { transform: translateY(-80px) translateX(-5px) scale(0.8); opacity:0; }
-    }
-    @keyframes spin3D {
-        from { transform: rotateY(0deg); }
-        to   { transform: rotateY(360deg); }
+    /* ═══════════════════════════════════════
+       MAIN CONTENT AREA
+    ═══════════════════════════════════════ */
+    .main .block-container {
+        position: relative;
+        z-index: 1;
+        padding-top: 1rem;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── SIDEBAR ───────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       GLASSMORPHISM SIDEBAR
+    ═══════════════════════════════════════ */
     section[data-testid="stSidebar"] {
-        background:
-            linear-gradient(180deg, #0d2210 0%, #1b5e20 40%, #2e7d32 75%, #388e3c 100%) !important;
-        border-right: none !important;
-        box-shadow: 6px 0 40px rgba(0,0,0,0.35), 2px 0 8px rgba(0,0,0,0.15);
-    }
-    /* Inner light reflection */
-    section[data-testid="stSidebar"]::after {
-        content: "";
-        position: absolute;
-        top: 0; left: 0;
-        width: 3px; height: 100%;
-        background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 60%);
-        pointer-events: none;
+        background: linear-gradient(175deg,
+            rgba(7,18,9,0.97) 0%,
+            rgba(13,43,16,0.95) 50%,
+            rgba(26,77,28,0.92) 100%) !important;
+        border-right: 1px solid rgba(78,203,82,0.2) !important;
+        box-shadow: 4px 0 40px rgba(0,0,0,0.6), inset -1px 0 0 rgba(78,203,82,0.1) !important;
+        backdrop-filter: blur(20px) !important;
     }
     section[data-testid="stSidebar"] * {
-        color: #e8f5e3 !important;
+        color: #d4f5d5 !important;
     }
     section[data-testid="stSidebar"] .stRadio label {
-        background: rgba(255,255,255,0.07);
-        backdrop-filter: blur(6px);
+        background: rgba(78,203,82,0.06);
         border-radius: 14px;
-        padding: 11px 16px;
+        padding: 12px 16px;
         margin: 5px 0;
         transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
         cursor: pointer;
-        border: 1px solid rgba(255,255,255,0.10);
+        border: 1px solid rgba(78,203,82,0.1);
         display: block;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.12),
-                    0 1px 0 rgba(255,255,255,0.08) inset;
-    }
-    section[data-testid="stSidebar"] .stRadio label:hover {
-        background: rgba(255,255,255,0.17);
-        transform: translateX(6px) scale(1.02);
-        border-color: rgba(165,214,167,0.40);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.18), 4px 0 0 rgba(165,214,167,0.6);
-    }
-    section[data-testid="stSidebar"] .stSelectbox select,
-    section[data-testid="stSidebar"] .stSelectbox > div {
-        background: rgba(255,255,255,0.10) !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(255,255,255,0.20) !important;
-        backdrop-filter: blur(8px);
-    }
-    section[data-testid="stSidebar"] hr {
-        border-color: rgba(255,255,255,0.12) !important;
-    }
-
-    /* ── Sidebar brand ──────────────────────────────────── */
-    .km-sidebar-brand {
-        text-align: center;
-        padding: 24px 10px 12px;
-        animation: fadeSlideDown 0.8s cubic-bezier(.34,1.56,.64,1) both;
         position: relative;
+        overflow: hidden;
     }
-    .km-sidebar-brand::after {
+    section[data-testid="stSidebar"] .stRadio label::before {
         content: "";
         position: absolute;
-        bottom: 0; left: 20%; right: 20%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(165,214,167,0.5), transparent);
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, #4ecb52, #f5a623);
+        border-radius: 14px 0 0 14px;
+        transform: scaleY(0);
+        transition: transform 0.25s ease;
     }
-    .km-sidebar-brand .km-logo-anim {
-        font-size: 52px;
-        display: inline-block;
-        animation: sway 3.5s ease-in-out infinite;
-        filter: drop-shadow(0 6px 18px rgba(0,0,0,0.4)) drop-shadow(0 0 24px rgba(165,214,167,0.5));
+    section[data-testid="stSidebar"] .stRadio label:hover {
+        background: rgba(78,203,82,0.14);
+        transform: translateX(6px);
+        border-color: rgba(78,203,82,0.25);
+    }
+    section[data-testid="stSidebar"] .stRadio label:hover::before {
+        transform: scaleY(1);
+    }
+    section[data-testid="stSidebar"] .stSelectbox > div {
+        background: rgba(78,203,82,0.08) !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(78,203,82,0.2) !important;
+    }
+    section[data-testid="stSidebar"] hr {
+        border-color: rgba(78,203,82,0.15) !important;
+    }
+
+    /* ── Sidebar Brand ─────────────────────────────────── */
+    .km-sidebar-brand {
+        text-align: center;
+        padding: 24px 12px 16px;
+        animation: fadeSlideDown 0.7s ease both;
+    }
+    .km-sidebar-brand .km-logo-3d {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 12px;
+        background: linear-gradient(145deg, #2d8a30, #0d2b10);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        box-shadow:
+            0 8px 32px rgba(0,0,0,0.5),
+            0 2px 0 rgba(78,203,82,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.1),
+            inset 0 -2px 4px rgba(0,0,0,0.3);
+        transform: perspective(200px) rotateX(5deg);
+        animation: logoFloat 4s ease-in-out infinite;
+        border: 1px solid rgba(78,203,82,0.3);
     }
     .km-sidebar-brand h2 {
         font-family: 'Playfair Display', serif !important;
         font-size: 1.55rem !important;
-        background: linear-gradient(135deg, #ffd54f 0%, #f9a825 50%, #fff8e1 100%) !important;
+        background: linear-gradient(135deg, #f5a623, #ffd166) !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
         background-clip: text !important;
-        margin: 8px 0 3px !important;
-        letter-spacing: 1.5px;
-        text-shadow: none !important;
+        margin: 0 0 4px !important;
+        letter-spacing: 1px;
+        text-shadow: none;
     }
     .km-sidebar-brand p {
-        font-size: 0.73rem !important;
-        color: #a5d6a7 !important;
+        font-size: 0.72rem !important;
+        color: rgba(78,203,82,0.75) !important;
         margin: 0 !important;
         letter-spacing: 0.5px;
     }
+    @keyframes logoFloat {
+        0%,100% { transform: perspective(200px) rotateX(5deg) translateY(0px); }
+        50%      { transform: perspective(200px) rotateX(5deg) translateY(-5px); }
+    }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── HERO BANNER — Full 3D ──────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
+    /* ═══════════════════════════════════════
+       KEYFRAME ANIMATIONS
+    ═══════════════════════════════════════ */
+    @keyframes fadeSlideDown {
+        from { opacity:0; transform:translateY(-24px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fadeSlideUp {
+        from { opacity:0; transform:translateY(28px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes growIn {
+        from { opacity:0; transform:scale(0.88) translateY(16px); }
+        to   { opacity:1; transform:scale(1) translateY(0); }
+    }
+    @keyframes shimmerText {
+        0%   { background-position: -200% center; }
+        100% { background-position:  200% center; }
+    }
+    @keyframes float {
+        0%,100% { transform: translateY(0) rotate(0deg); }
+        50%      { transform: translateY(-8px) rotate(3deg); }
+    }
+    @keyframes pulse-glow {
+        0%,100% { box-shadow: 0 0 0 0 rgba(78,203,82,0.4), var(--shadow-lift); }
+        50%      { box-shadow: 0 0 0 10px rgba(78,203,82,0), var(--shadow-lift); }
+    }
+    @keyframes borderGlow {
+        0%,100% { border-color: rgba(78,203,82,0.3); }
+        50%      { border-color: rgba(78,203,82,0.7); }
+    }
+    @keyframes rotate3d {
+        0%   { transform: perspective(600px) rotateY(0deg); }
+        100% { transform: perspective(600px) rotateY(360deg); }
+    }
+    @keyframes cardEntrance {
+        from { opacity:0; transform: perspective(800px) rotateX(15deg) translateY(40px); }
+        to   { opacity:1; transform: perspective(800px) rotateX(0deg) translateY(0); }
+    }
+    @keyframes gradientShift {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
 
+    /* ═══════════════════════════════════════
+       3D HERO BANNER
+    ═══════════════════════════════════════ */
     .km-hero {
-        background:
-            linear-gradient(135deg, #0d2210 0%, #1b5e20 40%, #2e7d32 70%, #388e3c 100%);
-        border-radius: 28px;
-        padding: 56px 40px;
+        background: linear-gradient(135deg,
+            #071209 0%,
+            #0d2b10 30%,
+            #1a4d1c 60%,
+            #2d8a30 100%);
+        background-size: 200% 200%;
+        animation: gradientShift 8s ease infinite, growIn 0.6s ease both;
+        border-radius: var(--radius-lg);
+        padding: 60px 40px;
         text-align: center;
         margin-bottom: 36px;
         position: relative;
         overflow: hidden;
-        animation: growIn3D 0.8s cubic-bezier(.34,1.56,.64,1) both;
-        /* Multi-layer 3D shadow */
         box-shadow:
-            0 2px 0 rgba(255,255,255,0.08) inset,
-            0 -6px 0 rgba(0,0,0,0.20) inset,
-            0 20px 60px rgba(13,34,16,0.50),
-            0 8px 24px rgba(0,0,0,0.20),
-            0 2px 8px rgba(0,0,0,0.10);
-        transform-style: preserve-3d;
+            0 30px 80px rgba(0,0,0,0.7),
+            0 10px 30px rgba(78,203,82,0.15),
+            inset 0 1px 0 rgba(255,255,255,0.07),
+            inset 0 -4px 12px rgba(0,0,0,0.3);
+        border: 1px solid rgba(78,203,82,0.2);
+        transform: perspective(1200px) rotateX(2deg);
+        transform-origin: 50% 100%;
     }
-
-    /* Bottom crop decoration */
     .km-hero::before {
-        content: "🌾🌱🌻🌾🌱🌻🌾🌱🌻🌾🌱🌻";
-        position: absolute;
-        bottom: -14px; left: 0; right: 0;
-        font-size: 2.2rem;
-        opacity: 0.10;
-        letter-spacing: 10px;
-        white-space: nowrap;
-        overflow: hidden;
-        filter: blur(1px);
-    }
-    /* Top highlight edge */
-    .km-hero::after {
         content: "";
         position: absolute;
-        top: 0; left: 5%; right: 5%;
-        height: 2px;
-        background: linear-gradient(90deg,
-            transparent 0%,
-            rgba(255,255,255,0.35) 30%,
-            rgba(255,213,79,0.60) 50%,
-            rgba(255,255,255,0.35) 70%,
-            transparent 100%);
-        border-radius: 50%;
-    }
-    /* Glow orb inside hero */
-    .km-hero-orb {
-        position: absolute;
-        width: 320px; height: 320px;
-        top: -80px; left: 50%;
-        transform: translateX(-50%);
-        background: radial-gradient(circle, rgba(102,187,106,0.18) 0%, transparent 70%);
-        border-radius: 50%;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 60% 40% at 50% 0%, rgba(78,203,82,0.18) 0%, transparent 70%),
+            radial-gradient(ellipse 40% 60% at 80% 100%, rgba(245,166,35,0.1) 0%, transparent 60%);
         pointer-events: none;
-        animation: orbDrift 10s ease-in-out infinite alternate;
+    }
+    .km-hero::after {
+        content: "🌾  🌱  🌻  🌾  🌱  🌻  🌾";
+        position: absolute;
+        bottom: -8px; left: 0; right: 0;
+        font-size: 1.8rem;
+        opacity: 0.08;
+        letter-spacing: 20px;
+        white-space: nowrap;
+        overflow: hidden;
+        animation: float 6s ease-in-out infinite;
+    }
+    .km-hero-badge {
+        display: inline-block;
+        background: rgba(78,203,82,0.15);
+        border: 1px solid rgba(78,203,82,0.4);
+        border-radius: 50px;
+        padding: 6px 20px;
+        font-size: 0.75rem;
+        color: #4ecb52;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 18px;
+        font-family: 'Space Grotesk', sans-serif;
     }
     .km-hero h1 {
         font-family: 'Playfair Display', serif !important;
-        font-size: clamp(2.2rem, 5vw, 3.5rem) !important;
-        background: linear-gradient(135deg, #ffd54f 0%, #f9a825 40%, #fff8e1 70%, #ffd54f 100%) !important;
+        font-size: clamp(2.4rem, 6vw, 4rem) !important;
+        background: linear-gradient(135deg, #ffd166 0%, #f5a623 40%, #ffec99 70%, #ffd166 100%) !important;
         background-size: 200% auto !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
         background-clip: text !important;
-        animation: shimmer 4s linear infinite !important;
-        margin-bottom: 8px !important;
-        position: relative;
-        z-index: 1;
-        /* 3D text depth */
-        filter: drop-shadow(0 4px 16px rgba(249,168,37,0.40));
+        animation: shimmerText 4s linear infinite !important;
+        margin-bottom: 10px !important;
+        line-height: 1.15 !important;
+        filter: drop-shadow(0 4px 16px rgba(245,166,35,0.4));
     }
     .km-hero h3 {
-        color: #c8e6c9 !important;
+        color: rgba(212,245,213,0.85) !important;
         font-size: 1.2rem !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
         margin: 0 !important;
-        position: relative;
-        z-index: 1;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        font-family: 'Space Grotesk', sans-serif !important;
+        letter-spacing: 0.3px;
+    }
+    .km-hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        margin-top: 28px;
+        flex-wrap: wrap;
+    }
+    .km-hero-stat {
+        text-align: center;
+    }
+    .km-hero-stat .num {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        color: #4ecb52;
+        display: block;
+        line-height: 1;
+        text-shadow: 0 0 20px rgba(78,203,82,0.6);
+    }
+    .km-hero-stat .lbl {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.5);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── FEATURE CARDS — 3D Glass ─────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       3D FEATURE CARDS
+    ═══════════════════════════════════════ */
     .km-feature-card {
-        background: var(--glass-bg);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
+        background: linear-gradient(145deg,
+            rgba(255,255,255,0.06) 0%,
+            rgba(255,255,255,0.02) 100%);
         border-radius: var(--radius-card);
-        padding: 30px 24px;
-        border: 1.5px solid var(--glass-border);
-        box-shadow: var(--shadow-3d);
-        transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s;
-        animation: fadeSlideUp 0.55s ease both;
+        padding: 32px 24px;
+        border: 1px solid rgba(78,203,82,0.2);
+        box-shadow:
+            0 20px 50px rgba(0,0,0,0.5),
+            0 4px 12px rgba(78,203,82,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+        transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+        animation: cardEntrance 0.6s ease both;
         height: 100%;
         position: relative;
         overflow: hidden;
-        transform-style: preserve-3d;
-        /* Bottom thickness illusion */
-        outline: 1px solid rgba(255,255,255,0.40);
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        transform: perspective(800px) translateZ(0);
     }
-    /* Shiny top edge */
     .km-feature-card::before {
         content: "";
         position: absolute;
-        top: 0; left: 8%; right: 8%;
-        height: 1.5px;
+        top: 0; left: 0; right: 0;
+        height: 3px;
         background: linear-gradient(90deg,
-            transparent, rgba(255,255,255,0.90), transparent);
-        border-radius: 50%;
+            #4ecb52 0%,
+            #f5a623 50%,
+            #4ecb52 100%);
+        background-size: 200% auto;
+        animation: shimmerText 3s linear infinite;
+        border-radius: 20px 20px 0 0;
     }
-    /* Accent bar */
     .km-feature-card::after {
         content: "";
         position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #388e3c, #66bb6a, #f9a825, #66bb6a, #388e3c);
-        background-size: 200% auto;
-        animation: borderRun 4s linear infinite;
-        border-radius: 20px 20px 0 0;
+        bottom: -50%;
+        right: -20%;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(78,203,82,0.08) 0%, transparent 70%);
+        pointer-events: none;
+        transition: all 0.4s ease;
     }
     .km-feature-card:hover {
-        transform: translateY(-10px) rotateX(4deg) rotateY(-2deg) scale(1.02);
-        box-shadow: var(--shadow-deep);
+        transform: perspective(800px) translateY(-12px) rotateX(4deg) rotateY(-2deg);
+        box-shadow:
+            0 40px 80px rgba(0,0,0,0.6),
+            0 8px 24px rgba(78,203,82,0.2),
+            inset 0 1px 0 rgba(255,255,255,0.12);
+        border-color: rgba(78,203,82,0.4);
+    }
+    .km-feature-card:hover::after {
+        bottom: -30%;
+        right: -10%;
+        width: 160px;
+        height: 160px;
     }
     .km-feature-card .km-icon {
         font-size: 2.6rem;
-        display: inline-block;
-        animation: float3D 4s ease-in-out infinite;
-        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.20));
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(145deg, rgba(78,203,82,0.15), rgba(78,203,82,0.05));
+        border-radius: 18px;
+        border: 1px solid rgba(78,203,82,0.2);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        animation: float 3.5s ease-in-out infinite;
+        margin-bottom: 4px;
     }
     .km-feature-card h3 {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.22rem;
-        color: var(--leaf-deep);
-        margin: 12px 0 8px;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-size: 1.15rem !important;
+        color: rgba(255,255,255,0.9) !important;
+        margin: 14px 0 8px !important;
+        font-weight: 600 !important;
     }
     .km-feature-card p {
-        font-size: 0.88rem;
-        color: #4a5568;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.45);
         margin: 0;
-        line-height: 1.65;
+        line-height: 1.7;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── STATS / METRICS ────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       METRICS / STATS - 3D STYLE
+    ═══════════════════════════════════════ */
     [data-testid="metric-container"] {
-        background: var(--glass-bg) !important;
-        backdrop-filter: var(--glass-blur) !important;
-        -webkit-backdrop-filter: var(--glass-blur) !important;
-        border-radius: 20px !important;
-        padding: 22px !important;
-        border: 1.5px solid var(--glass-border) !important;
-        box-shadow: var(--shadow-3d) !important;
-        transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s !important;
-        animation: growIn3D 0.6s ease both !important;
-        position: relative;
-        overflow: hidden;
-    }
-    [data-testid="metric-container"]::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 8%; right: 8%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+        background: linear-gradient(145deg,
+            rgba(78,203,82,0.1),
+            rgba(78,203,82,0.03)) !important;
+        border-radius: 18px !important;
+        padding: 24px !important;
+        border: 1px solid rgba(78,203,82,0.2) !important;
+        box-shadow:
+            0 16px 40px rgba(0,0,0,0.4),
+            0 4px 12px rgba(78,203,82,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.06) !important;
+        transition: all 0.3s ease;
+        animation: growIn 0.5s ease both;
+        backdrop-filter: blur(8px);
     }
     [data-testid="metric-container"]:hover {
-        transform: translateY(-6px) rotateX(3deg) !important;
-        box-shadow: var(--shadow-lift) !important;
+        transform: translateY(-5px) scale(1.02);
+        box-shadow:
+            0 24px 60px rgba(0,0,0,0.5),
+            0 0 30px rgba(78,203,82,0.15) !important;
+        border-color: rgba(78,203,82,0.4) !important;
     }
     [data-testid="stMetricLabel"] {
-        color: var(--leaf-deep) !important;
-        font-weight: 800 !important;
-        letter-spacing: 0.5px;
+        color: rgba(78,203,82,0.75) !important;
+        font-weight: 700 !important;
+        font-size: 0.8rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
     }
     [data-testid="stMetricValue"] {
         font-family: 'Playfair Display', serif !important;
-        background: linear-gradient(135deg, #1b5e20, #388e3c, #66bb6a) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        background-clip: text !important;
-        font-size: 2.4rem !important;
+        color: #ffd166 !important;
+        font-size: 2.6rem !important;
+        text-shadow: 0 0 20px rgba(255,209,102,0.4) !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── BUTTONS — 3D Press Effect ──────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       PREMIUM 3D BUTTONS
+    ═══════════════════════════════════════ */
     .stButton > button {
         border-radius: var(--radius-btn) !important;
-        font-family: 'Nunito', sans-serif !important;
-        font-weight: 800 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: 700 !important;
         transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important;
         border: none !important;
-        letter-spacing: 0.3px;
-        position: relative;
-        overflow: hidden;
+        position: relative !important;
+        overflow: hidden !important;
+        letter-spacing: 0.5px !important;
+    }
+    .stButton > button::before {
+        content: "" !important;
+        position: absolute !important;
+        inset: 0 !important;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%) !important;
+        border-radius: inherit !important;
+        pointer-events: none !important;
     }
     .stButton > button[kind="primary"],
     .stButton > button[data-testid*="primary"] {
-        background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 40%, #43a047 80%, #66bb6a 100%) !important;
+        background: linear-gradient(135deg, #1a6d1d 0%, #2d8a30 50%, #4ecb52 100%) !important;
         color: white !important;
-        /* 3D raised button look */
         box-shadow:
-            0 1px 0 rgba(255,255,255,0.30) inset,
-            0 -3px 0 rgba(0,0,0,0.25) inset,
-            0 6px 24px rgba(27,94,32,0.40),
-            0 2px 8px rgba(0,0,0,0.15) !important;
-        animation: pulseGlow 3s infinite;
-    }
-    .stButton > button[kind="primary"]::after,
-    .stButton > button[data-testid*="primary"]::after {
-        content: "";
-        position: absolute;
-        top: 0; left: -100%;
-        width: 60%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
-        transform: skewX(-20deg);
-        transition: left 0.5s ease;
-    }
-    .stButton > button[kind="primary"]:hover::after,
-    .stButton > button[data-testid*="primary"]:hover::after {
-        left: 150%;
+            0 8px 24px rgba(45,138,48,0.5),
+            0 2px 0 rgba(78,203,82,0.6),
+            inset 0 1px 0 rgba(255,255,255,0.25),
+            inset 0 -2px 4px rgba(0,0,0,0.2) !important;
+        animation: pulse-glow 2.5s infinite;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
     }
     .stButton > button:hover {
         transform: translateY(-3px) scale(1.04) !important;
         box-shadow:
-            0 1px 0 rgba(255,255,255,0.30) inset,
-            0 -3px 0 rgba(0,0,0,0.25) inset,
-            0 12px 36px rgba(27,94,32,0.45),
-            0 4px 12px rgba(0,0,0,0.18) !important;
+            0 16px 40px rgba(45,138,48,0.6),
+            0 0 24px rgba(78,203,82,0.3) !important;
+        filter: brightness(1.1) !important;
     }
     .stButton > button:active {
-        transform: translateY(2px) scale(0.97) !important;
-        box-shadow:
-            0 1px 0 rgba(0,0,0,0.10) inset,
-            0 -1px 0 rgba(255,255,255,0.15) inset,
-            0 2px 8px rgba(27,94,32,0.20) !important;
+        transform: translateY(0) scale(0.97) !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── INPUTS & SELECTS ──────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       TEXT INPUTS - GLASSMORPHISM
+    ═══════════════════════════════════════ */
     .stTextInput input,
     .stTextArea textarea,
     .stSelectbox select {
         border-radius: 14px !important;
-        border: 2px solid rgba(102,187,106,0.40) !important;
-        background: rgba(255,255,255,0.75) !important;
-        backdrop-filter: blur(8px) !important;
-        font-family: 'Nunito', sans-serif !important;
+        border: 1px solid rgba(78,203,82,0.2) !important;
+        background: rgba(255,255,255,0.04) !important;
+        color: rgba(255,255,255,0.9) !important;
+        font-family: 'Space Grotesk', sans-serif !important;
         transition: all 0.25s ease !important;
-        box-shadow: 0 2px 8px rgba(27,94,32,0.08),
-                    0 1px 0 rgba(255,255,255,0.80) inset !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        backdrop-filter: blur(8px) !important;
     }
-    .stTextInput input:focus, .stTextArea textarea:focus {
-        border-color: #66bb6a !important;
+    .stTextInput input:focus,
+    .stTextArea textarea:focus {
+        border-color: rgba(78,203,82,0.5) !important;
         box-shadow:
-            0 0 0 3px rgba(102,187,106,0.22),
-            0 4px 16px rgba(27,94,32,0.15),
-            0 1px 0 rgba(255,255,255,0.80) inset !important;
+            0 0 0 3px rgba(78,203,82,0.15),
+            0 8px 24px rgba(0,0,0,0.3),
+            inset 0 1px 0 rgba(78,203,82,0.1) !important;
+        background: rgba(255,255,255,0.07) !important;
         outline: none !important;
-        background: rgba(255,255,255,0.95) !important;
+    }
+    .stTextInput input::placeholder,
+    .stTextArea textarea::placeholder {
+        color: rgba(255,255,255,0.3) !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── HEADERS ──────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       TYPOGRAPHY
+    ═══════════════════════════════════════ */
     h1, h2, h3 {
         font-family: 'Playfair Display', serif !important;
     }
-    .stApp h2, .stApp h3 {
-        color: var(--leaf-deep) !important;
+    .stApp h2 {
+        background: linear-gradient(135deg, #4ecb52 0%, #a8f5aa 50%, #4ecb52 100%) !important;
+        background-size: 200% auto !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        animation: shimmerText 4s linear infinite !important;
+        font-size: 1.7rem !important;
+        margin-bottom: 16px !important;
     }
-    .stApp h2, .stApp [data-testid="stHeader"] {
-        background: linear-gradient(90deg,
-            var(--leaf-deep) 0%,
-            var(--leaf-mid)  30%,
-            var(--leaf-bright) 55%,
-            var(--sun-gold)  75%,
-            var(--leaf-deep) 100%);
-        background-size: 300% auto;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: shimmer 5s linear infinite;
-        filter: drop-shadow(0 2px 6px rgba(27,94,32,0.18));
+    .stApp h3 {
+        color: rgba(255,255,255,0.85) !important;
     }
+    p, .stMarkdown p {
+        color: rgba(255,255,255,0.7) !important;
+    }
+    label, .stLabel { color: rgba(255,255,255,0.75) !important; }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── COMMUNITY POST CARD ───────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       3D POST CARD
+    ═══════════════════════════════════════ */
     .km-post-card {
-        background: var(--glass-bg);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border: 1.5px solid rgba(255,255,255,0.75);
+        background: linear-gradient(145deg,
+            rgba(255,255,255,0.06),
+            rgba(255,255,255,0.02));
+        border: 1px solid rgba(78,203,82,0.18);
         border-radius: var(--radius-card);
         padding: 24px 22px;
         margin-bottom: 20px;
-        box-shadow: var(--shadow-3d);
-        transition: transform 0.28s cubic-bezier(.34,1.56,.64,1), box-shadow 0.28s;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+        transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
         animation: fadeSlideUp 0.45s ease both;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(8px);
     }
     .km-post-card::before {
         content: "";
         position: absolute;
         left: 0; top: 0; bottom: 0;
-        width: 5px;
-        background: linear-gradient(180deg, #66bb6a, #f9a825, #66bb6a);
-        background-size: 100% 200%;
-        animation: borderRun 3s linear infinite;
+        width: 3px;
+        background: linear-gradient(180deg, #4ecb52, #f5a623);
         border-radius: 20px 0 0 20px;
     }
-    .km-post-card::after {
-        content: "";
-        position: absolute;
-        top: 0; left: 8%; right: 8%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
-    }
     .km-post-card:hover {
-        transform: translateY(-6px) rotateX(2deg);
-        box-shadow: var(--shadow-lift);
+        transform: translateY(-6px) rotateX(1deg);
+        box-shadow: 0 28px 60px rgba(0,0,0,0.6), 0 0 20px rgba(78,203,82,0.12);
+        border-color: rgba(78,203,82,0.3);
     }
     .km-post-card h4 {
-        font-family: 'Playfair Display', serif;
-        color: var(--leaf-deep);
-        margin: 0 0 10px;
-        font-size: 1.08rem;
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: rgba(255,255,255,0.9) !important;
+        margin: 0 0 10px !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
     }
-    .km-post-card p  { color: #2d3748; margin: 0 0 8px; line-height: 1.6; }
-    .km-post-card small { color: #718096; font-size: 0.8rem; }
+    .km-post-card p { color: rgba(255,255,255,0.65) !important; margin: 0 0 10px !important; }
+    .km-post-card small { color: rgba(78,203,82,0.6) !important; font-size: 0.78rem !important; }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── SCHEME CARDS ──────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       3D SCHEME BADGE CARD
+    ═══════════════════════════════════════ */
     .km-scheme-card {
-        background: linear-gradient(135deg,
-            rgba(240,249,240,0.90) 0%,
-            rgba(232,245,233,0.85) 100%);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border: 1.5px solid rgba(165,214,167,0.60);
+        background: linear-gradient(145deg,
+            rgba(78,203,82,0.1),
+            rgba(78,203,82,0.03));
+        border: 1px solid rgba(78,203,82,0.25);
         border-radius: 18px;
-        padding: 22px 18px;
+        padding: 24px 18px;
         text-align: center;
-        transition: transform 0.30s cubic-bezier(.34,1.56,.64,1), box-shadow 0.30s;
-        animation: growIn3D 0.5s ease both;
+        transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+        animation: growIn 0.45s ease both;
         cursor: pointer;
         position: relative;
         overflow: hidden;
-        box-shadow:
-            0 1px 0 rgba(255,255,255,0.90) inset,
-            0 -3px 0 rgba(56,142,60,0.12) inset,
-            0 6px 24px rgba(56,142,60,0.14);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+        backdrop-filter: blur(8px);
     }
-    .km-scheme-card::before {
+    .km-scheme-card::after {
         content: "";
         position: absolute;
-        top: 0; left: 15%; right: 15%;
+        top: 0; left: 0; right: 0;
         height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
+        background: linear-gradient(90deg, transparent, rgba(78,203,82,0.6), transparent);
     }
     .km-scheme-card:hover {
-        transform: translateY(-8px) rotateX(5deg) scale(1.03);
-        box-shadow:
-            0 1px 0 rgba(255,255,255,0.90) inset,
-            0 20px 48px rgba(56,142,60,0.22),
-            0 8px 20px rgba(0,0,0,0.10);
+        transform: translateY(-8px) scale(1.03) rotateX(3deg);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 30px rgba(78,203,82,0.15);
+        border-color: rgba(78,203,82,0.5);
     }
     .km-scheme-card h4 {
-        font-family: 'Playfair Display', serif;
-        color: var(--leaf-deep);
-        font-size: 1.12rem;
-        margin: 0 0 6px;
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #ffd166 !important;
+        font-size: 1.1rem !important;
+        margin: 0 0 6px !important;
+        font-weight: 700 !important;
     }
     .km-scheme-card p {
-        font-size: 0.82rem;
-        color: #388e3c;
-        margin: 0;
-        font-weight: 600;
+        font-size: 0.8rem !important;
+        color: rgba(78,203,82,0.75) !important;
+        margin: 0 !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── PRODUCT CARDS ─────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       3D PRODUCT CARD
+    ═══════════════════════════════════════ */
     .km-product-card {
-        background: linear-gradient(135deg,
-            rgba(255,253,231,0.92) 0%,
-            rgba(255,248,225,0.88) 100%);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border: 1.5px solid rgba(255,224,130,0.70);
+        background: linear-gradient(145deg,
+            rgba(245,166,35,0.08),
+            rgba(255,209,102,0.03));
+        border: 1px solid rgba(245,166,35,0.25);
         border-radius: var(--radius-card);
         padding: 24px 20px;
         margin-bottom: 20px;
         box-shadow:
-            0 1px 0 rgba(255,255,255,0.95) inset,
-            0 -3px 0 rgba(244,185,66,0.20) inset,
-            0 8px 28px rgba(244,185,66,0.20),
-            0 3px 8px rgba(0,0,0,0.07);
-        transition: transform 0.30s cubic-bezier(.34,1.56,.64,1), box-shadow 0.30s;
-        animation: fadeSlideUp 0.45s ease both;
+            0 16px 40px rgba(0,0,0,0.5),
+            0 4px 12px rgba(245,166,35,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.06);
+        transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+        animation: fadeSlideUp 0.4s ease both;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(8px);
     }
     .km-product-card::before {
         content: "";
         position: absolute;
-        top: 0; left: 8%; right: 8%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
-    }
-    .km-product-card::after {
-        content: "";
-        position: absolute;
-        top: 0; right: 0;
-        width: 70px; height: 70px;
-        background: radial-gradient(circle at top right,
-            rgba(249,168,37,0.25) 0%, transparent 70%);
-        border-radius: 0 20px 0 0;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #f5a623, #ffd166, #f5a623);
+        background-size: 200% auto;
+        animation: shimmerText 3s linear infinite;
     }
     .km-product-card:hover {
-        transform: translateY(-8px) rotateX(3deg);
+        transform: translateY(-8px) rotateX(2deg);
         box-shadow:
-            0 1px 0 rgba(255,255,255,0.95) inset,
-            0 -3px 0 rgba(244,185,66,0.25) inset,
-            0 20px 48px rgba(244,185,66,0.32),
-            0 8px 20px rgba(0,0,0,0.10);
-        animation: goldPulse 2s infinite;
+            0 28px 60px rgba(0,0,0,0.6),
+            0 0 30px rgba(245,166,35,0.15);
+        border-color: rgba(245,166,35,0.5);
     }
     .km-product-card h3 {
-        font-family: 'Playfair Display', serif;
-        color: var(--soil-brown);
-        margin: 0 0 12px;
-        font-size: 1.18rem;
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #ffd166 !important;
+        margin: 0 0 12px !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
     }
     .km-product-card p {
-        color: #5a4020;
-        margin: 5px 0;
-        font-size: 0.92rem;
-        font-weight: 600;
+        color: rgba(255,255,255,0.6) !important;
+        margin: 6px 0 !important;
+        font-size: 0.88rem !important;
+    }
+    .km-product-card strong {
+        color: rgba(245,166,35,0.85) !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── FOOTER ─────────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       3D FOOTER
+    ═══════════════════════════════════════ */
     .km-footer {
-        background: linear-gradient(135deg, #0d2210 0%, #1b5e20 50%, #2e7d32 100%);
-        border-radius: 24px;
-        padding: 36px;
+        background: linear-gradient(135deg,
+            #071209 0%,
+            #0d2b10 50%,
+            #1a4d1c 100%);
+        border-radius: var(--radius-lg);
+        padding: 40px 32px;
         text-align: center;
-        margin-top: 32px;
+        margin-top: 36px;
         box-shadow:
-            0 2px 0 rgba(255,255,255,0.08) inset,
-            0 -6px 0 rgba(0,0,0,0.18) inset,
-            var(--shadow-deep);
+            0 -4px 40px rgba(0,0,0,0.5),
+            0 30px 60px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(78,203,82,0.1);
         position: relative;
         overflow: hidden;
-        animation: fadeSlideUp 0.7s ease both;
+        animation: fadeSlideUp 0.6s ease both;
+        border: 1px solid rgba(78,203,82,0.15);
+        transform: perspective(1200px) rotateX(-1deg);
+        transform-origin: 50% 0%;
     }
     .km-footer::before {
-        content: "🌾🌱🌾🌱🌾🌱🌾🌱🌾🌱🌾";
+        content: "";
         position: absolute;
-        top: -8px; left: 0; right: 0;
-        font-size: 1.5rem;
-        opacity: 0.12;
-        letter-spacing: 12px;
-        white-space: nowrap;
-        overflow: hidden;
-        filter: blur(0.5px);
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(78,203,82,0.6) 30%,
+            rgba(245,166,35,0.6) 70%,
+            transparent 100%);
     }
     .km-footer::after {
         content: "";
         position: absolute;
-        top: 0; left: 5%; right: 5%;
-        height: 2px;
-        background: linear-gradient(90deg,
-            transparent,
-            rgba(255,213,79,0.50) 30%,
-            rgba(255,255,255,0.30) 50%,
-            rgba(255,213,79,0.50) 70%,
-            transparent);
-        border-radius: 50%;
+        inset: 0;
+        background: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(78,203,82,0.06) 0%, transparent 70%);
+        pointer-events: none;
     }
     .km-footer .km-footer-logo {
-        font-size: 3rem;
-        display: inline-block;
-        animation: sway 3.5s ease-in-out infinite;
-        filter: drop-shadow(0 6px 16px rgba(0,0,0,0.4)) drop-shadow(0 0 20px rgba(249,168,37,0.5));
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 14px;
+        background: linear-gradient(145deg, rgba(78,203,82,0.15), rgba(78,203,82,0.05));
+        border-radius: 20px;
+        border: 1px solid rgba(78,203,82,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 16px rgba(78,203,82,0.15);
+        animation: logoFloat 4s ease-in-out infinite;
     }
     .km-footer h3 {
         font-family: 'Playfair Display', serif !important;
-        background: linear-gradient(135deg, #ffd54f, #f9a825, #fff8e1) !important;
+        background: linear-gradient(135deg, #ffd166, #f5a623) !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
         background-clip: text !important;
         font-size: 1.5rem !important;
-        margin: 10px 0 5px !important;
-        filter: drop-shadow(0 2px 8px rgba(249,168,37,0.4));
+        margin: 0 0 6px !important;
     }
-    .km-footer .km-tagline { color: #a5d6a7 !important; font-size: 0.95rem; margin: 0 0 6px; }
-    .km-footer .km-love   { color: #c8e6c9 !important; font-size: 0.88rem; margin: 0 0 14px; }
-    .km-footer .km-copy   {
-        color: rgba(255,255,255,0.38) !important;
-        font-size: 0.74rem;
-        border-top: 1px solid rgba(255,255,255,0.10);
-        padding-top: 12px;
-        margin-top: 8px;
+    .km-footer .km-tagline {
+        color: rgba(78,203,82,0.7) !important;
+        font-size: 0.9rem !important;
+        margin: 0 0 8px !important;
+    }
+    .km-footer .km-love {
+        color: rgba(255,255,255,0.45) !important;
+        font-size: 0.82rem !important;
+        margin: 0 0 14px !important;
+    }
+    .km-footer .km-copy {
+        color: rgba(255,255,255,0.2) !important;
+        font-size: 0.72rem !important;
+        border-top: 1px solid rgba(255,255,255,0.06) !important;
+        padding-top: 12px !important;
+        margin-top: 10px !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── TABS ───────────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       TABS - GLASSMORPHISM
+    ═══════════════════════════════════════ */
     .stTabs [data-baseweb="tab-list"] {
-        background: rgba(56,142,60,0.10);
-        backdrop-filter: blur(8px);
+        background: rgba(255,255,255,0.04);
         border-radius: 50px;
         padding: 5px;
         gap: 4px;
-        box-shadow: 0 2px 12px rgba(27,94,32,0.10),
-                    0 1px 0 rgba(255,255,255,0.60) inset;
+        border: 1px solid rgba(78,203,82,0.15);
+        backdrop-filter: blur(8px);
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 50px !important;
-        font-weight: 800;
-        font-family: 'Nunito', sans-serif;
-        transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+        font-weight: 700 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        transition: all 0.25s ease !important;
+        color: rgba(255,255,255,0.5) !important;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #1b5e20, #43a047, #66bb6a) !important;
+        background: linear-gradient(135deg, #1a6d1d, #4ecb52) !important;
         color: white !important;
-        box-shadow:
-            0 1px 0 rgba(255,255,255,0.25) inset,
-            0 -2px 0 rgba(0,0,0,0.15) inset,
-            0 4px 16px rgba(27,94,32,0.30) !important;
+        box-shadow: 0 4px 16px rgba(45,138,48,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── FILE UPLOADER ─────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       FILE UPLOADER
+    ═══════════════════════════════════════ */
     .stFileUploader {
-        border: 2px dashed rgba(102,187,106,0.55) !important;
+        border: 1px dashed rgba(78,203,82,0.3) !important;
         border-radius: 18px !important;
-        background: rgba(240,250,240,0.70) !important;
-        backdrop-filter: blur(8px) !important;
-        transition: all 0.25s ease;
-        box-shadow: 0 2px 12px rgba(27,94,32,0.08);
+        background: rgba(78,203,82,0.04) !important;
+        transition: all 0.25s ease !important;
     }
     .stFileUploader:hover {
-        border-color: #66bb6a !important;
-        background: rgba(232,245,233,0.85) !important;
-        box-shadow: 0 4px 20px rgba(27,94,32,0.14);
-        transform: scale(1.01);
+        border-color: rgba(78,203,82,0.6) !important;
+        background: rgba(78,203,82,0.08) !important;
+        box-shadow: 0 0 20px rgba(78,203,82,0.1) !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── CHAT MESSAGES ─────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       CHAT MESSAGES
+    ═══════════════════════════════════════ */
     [data-testid="stChatMessage"] {
-        background: var(--glass-bg) !important;
-        backdrop-filter: var(--glass-blur) !important;
-        -webkit-backdrop-filter: var(--glass-blur) !important;
+        background: rgba(255,255,255,0.04) !important;
         border-radius: 18px !important;
-        border: 1.5px solid rgba(255,255,255,0.75) !important;
-        box-shadow: var(--shadow-3d) !important;
+        border: 1px solid rgba(78,203,82,0.15) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05) !important;
         margin-bottom: 12px !important;
-        animation: fadeSlideUp 0.35s ease both;
-        transition: transform 0.2s ease !important;
-    }
-    [data-testid="stChatMessage"]:hover {
-        transform: translateY(-2px) !important;
+        animation: fadeSlideUp 0.3s ease both !important;
+        backdrop-filter: blur(8px) !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── ALERTS / INFO / SUCCESS ──────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       INFO / ALERT BOXES
+    ═══════════════════════════════════════ */
     .stAlert {
         border-radius: 16px !important;
-        border-left-width: 5px !important;
-        font-family: 'Nunito', sans-serif !important;
+        border-left-width: 4px !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        background: rgba(255,255,255,0.04) !important;
         backdrop-filter: blur(8px) !important;
-        background: rgba(255,255,255,0.80) !important;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── SPINNER ──────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
-    .stSpinner > div {
-        border-top-color: #66bb6a !important;
-        border-width: 3px !important;
-        filter: drop-shadow(0 0 8px rgba(102,187,106,0.6));
-    }
-
-    /* ─────────────────────────────────────────────────── */
-    /* ── DIVIDER ──────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       DIVIDERS
+    ═══════════════════════════════════════ */
     hr {
         border: none !important;
-        height: 1.5px !important;
+        height: 1px !important;
         background: linear-gradient(90deg,
-            transparent, rgba(102,187,106,0.35) 25%,
-            rgba(249,168,37,0.25) 50%,
-            rgba(102,187,106,0.35) 75%,
+            transparent,
+            rgba(78,203,82,0.3) 30%,
+            rgba(245,166,35,0.3) 70%,
             transparent) !important;
         margin: 24px 0 !important;
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── SCROLLBAR ─────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
-    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    /* ═══════════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track {
-        background: rgba(240,250,240,0.50);
+        background: rgba(255,255,255,0.03);
         border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #66bb6a, #f9a825);
+        background: linear-gradient(180deg, #4ecb52, #f5a623);
         border-radius: 10px;
-        box-shadow: 0 0 6px rgba(102,187,106,0.4);
+        box-shadow: 0 0 8px rgba(78,203,82,0.3);
     }
 
-    /* ─────────────────────────────────────────────────── */
-    /* ── USER GUIDE LIST ITEMS ─────────────────────────── */
-    /* ─────────────────────────────────────────────────── */
-
+    /* ═══════════════════════════════════════
+       GUIDE ITEMS
+    ═══════════════════════════════════════ */
     .km-guide-item {
-        background: var(--glass-bg);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border-radius: 15px;
-        padding: 15px 20px;
+        background: rgba(255,255,255,0.04);
+        border-radius: 14px;
+        padding: 14px 18px;
         margin-bottom: 10px;
-        border: 1.5px solid rgba(255,255,255,0.75);
-        box-shadow: var(--shadow-3d);
-        font-size: 0.95rem;
-        color: #1b3a1e;
+        border: 1px solid rgba(78,203,82,0.15);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+        font-size: 0.92rem;
+        color: rgba(255,255,255,0.7) !important;
         display: flex;
         align-items: center;
         gap: 12px;
-        transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+        transition: all 0.25s ease;
         animation: fadeSlideUp 0.4s ease both;
-        position: relative;
-        overflow: hidden;
-    }
-    .km-guide-item::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 8%; right: 8%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.90), transparent);
+        backdrop-filter: blur(6px);
     }
     .km-guide-item:hover {
-        transform: translateX(8px) translateY(-2px);
-        box-shadow: var(--shadow-lift);
-        border-color: rgba(102,187,106,0.40);
+        transform: translateX(8px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.35), 0 0 16px rgba(78,203,82,0.08);
+        border-color: rgba(78,203,82,0.3);
+        background: rgba(78,203,82,0.06);
+    }
+    .km-guide-item .num {
+        background: linear-gradient(135deg, #2d8a30, #4ecb52);
+        color: white;
+        font-weight: 800;
+        min-width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        box-shadow: 0 4px 12px rgba(45,138,48,0.4);
+        flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════
+       SPINNER
+    ═══════════════════════════════════════ */
+    .stSpinner > div { border-top-color: #4ecb52 !important; }
+
+    /* ═══════════════════════════════════════
+       CAPTION / SMALL TEXT
+    ═══════════════════════════════════════ */
+    .stCaption, caption, .stMarkdown small {
+        color: rgba(255,255,255,0.4) !important;
     }
 
     </style>
     """, unsafe_allow_html=True)
 
-    # =========================================================================
+    # =============================================================================
     # SIDEBAR NAVIGATION
-    # =========================================================================
+    # =============================================================================
     st.sidebar.markdown("""
     <div class="km-sidebar-brand">
-        <span class="km-logo-anim">🌾</span>
+        <div class="km-logo-3d">🌾</div>
         <h2>Krishi Mitra</h2>
         <p>Your Intelligent Farming Companion</p>
     </div>
     """, unsafe_allow_html=True)
     st.sidebar.markdown("---")
-
+    
     # Navigation with translated labels
     page_options = [
         get_text('home', selected_lang),
@@ -1345,13 +1365,13 @@ def run_main_app(user):
         get_text('schemes', selected_lang),
         get_text('products', selected_lang)
     ]
-
+    
     page = st.sidebar.radio(
         get_text('select_feature', selected_lang),
         options=page_options
     )
-
-    # Language selector in sidebar
+    
+        # Language selector in sidebar
     st.sidebar.markdown(f"### 🌐 {get_text('language', selected_lang)}")
     lang_options = {
         'en': 'English',
@@ -1362,7 +1382,7 @@ def run_main_app(user):
         'te': 'తెలుగు (Telugu)',
         'kn': 'ಕನ್ನಡ (Kannada)'
     }
-
+    
     selected_lang_key = st.sidebar.selectbox(
         "Select Language / भाषा चुनें",
         options=list(lang_options.keys()),
@@ -1370,50 +1390,61 @@ def run_main_app(user):
         index=list(lang_options.keys()).index(selected_lang),
         key='language_selector'
     )
-
+    
     # Update session state if language changed
     if selected_lang_key != selected_lang:
         st.session_state['selected_language'] = selected_lang_key
         st.rerun()
-
-    st.sidebar.markdown("---")
-
-    # =========================================================================
+    
+        st.sidebar.markdown("---")
+    
+                
+    
+    # =============================================================================
     # HOME PAGE
-    # =========================================================================
+    # =============================================================================
     if page == get_text('home', selected_lang):
+        posts_count = len(get_all_posts(limit=1000))
+        products_count = len(get_all_products(limit=1000))
         st.markdown(f"""
         <div class="km-hero">
-            <div class="km-hero-orb"></div>
+            <div class="km-hero-badge">&#127807; AI-Powered Farming Platform</div>
             <h1>&#127806; Krishi Mitra</h1>
             <h3>{get_text("welcome", selected_lang)}, {user["farmer_name"]}! &#128591;</h3>
+            <div class="km-hero-stats">
+                <div class="km-hero-stat">
+                    <span class="num">{posts_count}</span>
+                    <span class="lbl">Community Posts</span>
+                </div>
+                <div class="km-hero-stat">
+                    <span class="num">{products_count}</span>
+                    <span class="lbl">Products Listed</span>
+                </div>
+                <div class="km-hero-stat">
+                    <span class="num">7</span>
+                    <span class="lbl">Languages</span>
+                </div>
+                <div class="km-hero-stat">
+                    <span class="num">AI</span>
+                    <span class="lbl">Powered</span>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.subheader(get_text('user_guide', selected_lang))
-        st.markdown(
-            f"<p style='color:#2e7d32;font-weight:800;margin-bottom:10px;font-size:1.02rem;'>"
-            f"{get_text('how_to_use', selected_lang)}</p>",
-            unsafe_allow_html=True
-        )
-        for i, key in enumerate(['feature_1', 'feature_2', 'feature_3', 'feature_4', 'feature_5', 'feature_6'], 1):
+        st.markdown(f"<p style='color:#558b2f;font-weight:700;margin-bottom:8px;'>{get_text('how_to_use', selected_lang)}</p>", unsafe_allow_html=True)
+        for i, key in enumerate(['feature_1','feature_2','feature_3','feature_4','feature_5','feature_6'], 1):
             text = get_text(key, selected_lang)
-            st.markdown(
-                f'<div class="km-guide-item" style="animation-delay:{i * 0.08}s">'
-                f'<span style="font-size:1.15rem;min-width:28px;text-align:center;'
-                f'background:linear-gradient(135deg,#2e7d32,#66bb6a);'
-                f'-webkit-background-clip:text;-webkit-text-fill-color:transparent;'
-                f'font-weight:900;">{i}.</span>{text}</div>',
-                unsafe_allow_html=True
-            )
-
+            st.markdown(f'<div class="km-guide-item" style="animation-delay:{i*0.07}s"><span class="num">{i}</span>{text}</div>', unsafe_allow_html=True)
+        
         # Feature cards
         st.markdown("---")
         col1, col2, col3 = st.columns(3)
         cards = [
-            ("🤖", get_text('ai_assistant', selected_lang).split(' ', 1)[-1], get_text('ask_question', selected_lang)),
-            ("📸", get_text('crop_diagnosis', selected_lang).split(' ', 1)[-1], get_text('upload_image', selected_lang)),
-            ("👥", get_text('community', selected_lang).split(' ', 1)[-1], get_text('share_experience', selected_lang)),
+            ("🤖", get_text('ai_assistant', selected_lang).split(' ',1)[-1], get_text('ask_question', selected_lang)),
+            ("📸", get_text('crop_diagnosis', selected_lang).split(' ',1)[-1], get_text('upload_image', selected_lang)),
+            ("👥", get_text('community', selected_lang).split(' ',1)[-1], get_text('share_experience', selected_lang)),
         ]
         for col, (icon, title, desc) in zip([col1, col2, col3], cards):
             with col:
@@ -1424,24 +1455,24 @@ def run_main_app(user):
                     <p>{desc}</p>
                 </div>
                 """, unsafe_allow_html=True)
-
+        
         # Stats
         st.markdown("---")
         st.subheader(get_text('platform_overview', selected_lang))
-
+        
         col1, col2, col3 = st.columns(3)
-
+        
         posts = get_all_posts(limit=1000)
         products = get_all_products(limit=1000)
-
+        
         with col1:
             st.metric(get_text('community', selected_lang).split(' ')[1], len(posts))
         with col2:
             st.metric(get_text('products', selected_lang).split(' ')[1], len(products))
         with col3:
             st.metric(get_text('language', selected_lang), len(SUPPORTED_LANGUAGES))
-
-        # Footer on home page
+        
+        # Made with love footer on home page
         st.markdown("---")
         ft = TRANSLATIONS.get(selected_lang, TRANSLATIONS['en'])
         st.markdown(f"""
@@ -1453,56 +1484,57 @@ def run_main_app(user):
             <p class="km-copy">{ft['copyright']}</p>
         </div>
         """, unsafe_allow_html=True)
-
-    # =========================================================================
+        return
+    
+    # =============================================================================
     # AI FARMING ASSISTANT - NO VOICE
-    # =========================================================================
+    # =============================================================================
     elif page == get_text('ai_assistant', selected_lang):
         st.header(get_text('ai_assistant', selected_lang))
-
+        
         st.markdown(f"🌐 {get_text('language', selected_lang)}: **{get_language_name(selected_lang)}**")
         st.markdown(get_text('ask_question', selected_lang))
-
+        
         # Initialize chat history
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
-
+        
         # Display chat history - NO VOICE BUTTONS
         for idx, message in enumerate(st.session_state.chat_history):
             with st.chat_message(message["role"]):
                 st.write(message["content"])
                 if "language" in message:
                     st.caption(f"{get_text('language', selected_lang)}: {get_language_name(message['language'])}")
-
+        
         # Text input
         user_query = st.chat_input(get_text('type_here', selected_lang))
-
+        
         if user_query:
             st.session_state.chat_history.append({
-                "role": "user",
+                "role": "user", 
                 "content": user_query
             })
-
+            
             with st.chat_message("user"):
                 st.write(user_query)
-
+            
             with st.spinner("🤖 Thinking..."):
                 response = ai_service.get_farming_response(user_query, selected_lang)
-
+            
             st.session_state.chat_history.append({
-                "role": "assistant",
+                "role": "assistant", 
                 "content": response,
                 "language": selected_lang
             })
-
+            
             with st.chat_message("assistant"):
                 st.write(response)
                 st.caption(f"{get_text('language', selected_lang)}: {get_language_name(selected_lang)}")
-
+        
         # Quick questions
         st.markdown("---")
         st.subheader(get_text('quick_questions', selected_lang))
-
+        
         quick_questions = {
             'en': ["How to control aphids?", "Best fertilizer for rice", "Organic pest control", "Water management"],
             'mr': ["अ‍ॅफिड्स कसे नियंत्रित करावे?", "भातासाठी सर्वोत्तम खत", "सेंद्रिय कीटक नियंत्रण", "पाणी व्यवस्थापन"],
@@ -1512,42 +1544,42 @@ def run_main_app(user):
             'te': ["ఎఫిడ్లను నియంత్రించడం?", "వరికి ఎరువు", "సేంద్రీయ పురుగు నియంత్రణ", "నీటి నిర్వహణ"],
             'kn': ["ಎಫಿಡ್‌ಗಳನ್ನು ನಿಯಂತ್ರಿಸುವುದು?", "ಭತ್ತಕ್ಕೆ ಗೊಬ್ಬರ", "ಸಾವಯವ ಕೀಟ ನಿಯಂತ್ರಣ", "ನೀರಿನ ವ್ಯವಸ್ಥಾಪನೆ"]
         }
-
+        
         questions = quick_questions.get(selected_lang, quick_questions['en'])
-
+        
         cols = st.columns(len(questions))
         for idx, question in enumerate(questions):
             with cols[idx]:
                 if st.button(question[:15] + "...", key=f"quick_{idx}"):
                     st.session_state.chat_history.append({
-                        "role": "user",
+                        "role": "user", 
                         "content": question
                     })
                     st.rerun()
-
-    # =========================================================================
+    
+    # =============================================================================
     # CROP DIAGNOSIS - NO VOICE
-    # =========================================================================
+    # =============================================================================
     elif page == get_text('crop_diagnosis', selected_lang):
         st.header(get_text('crop_diagnosis', selected_lang))
-
+        
         col1, col2 = st.columns([1, 1])
-
+        
         with col1:
             st.subheader(get_text('upload_image', selected_lang))
             uploaded_file = st.file_uploader(
-                "Choose image",
+                "Choose image", 
                 type=['jpg', 'jpeg', 'png'],
                 help="Upload clear photo"
             )
-
+            
             additional_context = st.text_area(
                 "Additional info (optional)",
                 placeholder="Describe symptoms..."
             )
-
+            
             analyze_btn = st.button(get_text('analyze', selected_lang), type="primary")
-
+        
         with col2:
             st.subheader(get_text('preview', selected_lang))
             if uploaded_file:
@@ -1559,7 +1591,7 @@ def run_main_app(user):
                     st.error(msg)
             else:
                 st.info("Image preview will appear here")
-
+        
         if analyze_btn and uploaded_file:
             is_valid, msg = validate_image(uploaded_file)
             if not is_valid:
@@ -1567,51 +1599,51 @@ def run_main_app(user):
             else:
                 with st.spinner("🧠 Analyzing..."):
                     compressed_image = compress_image(uploaded_file)
-
+                    
                     if compressed_image:
                         analysis = ai_service.analyze_crop_image(
-                            compressed_image,
+                            compressed_image, 
                             additional_context,
                             selected_lang
                         )
-
+                        
                         st.markdown("---")
                         st.subheader(get_text('analysis_report', selected_lang))
                         st.markdown(analysis)
                     else:
                         st.error("Failed to process image")
-
-    # =========================================================================
+    
+    # =============================================================================
     # CROP KNOWLEDGE - NO VOICE
-    # =========================================================================
+    # =============================================================================
     elif page == get_text('crop_knowledge', selected_lang):
         st.header(get_text('crop_knowledge', selected_lang))
-
+        
         crop_name = st.text_input(
             get_text('enter_crop', selected_lang),
             placeholder="e.g., Wheat, Rice, Cotton..."
         )
-
+        
         if st.button(get_text('generate', selected_lang), type="primary") and crop_name:
             with st.spinner("🌱 Generating..."):
                 knowledge = ai_service.generate_crop_knowledge(crop_name, selected_lang)
-
+                
                 st.markdown("---")
                 st.markdown(knowledge)
-
-    # =========================================================================
+    
+    # =============================================================================
     # FARMER COMMUNITY - NO VOICE
-    # =========================================================================
+    # =============================================================================
     elif page == get_text('community', selected_lang):
         st.header(get_text('community', selected_lang))
-
+        
         tab1, tab2 = st.tabs([get_text('view_posts', selected_lang), get_text('create_post', selected_lang)])
-
+        
         with tab1:
             st.subheader(get_text('view_posts', selected_lang))
-
+            
             posts = get_all_posts(limit=20)
-
+            
             if not posts:
                 st.info("No posts yet!")
             else:
@@ -1624,80 +1656,80 @@ def run_main_app(user):
                             <small>&#128336; {format_datetime(post['created_at'])}</small>
                         </div>
                         """, unsafe_allow_html=True)
-
+                        
                         if post['image_path'] and os.path.exists(post['image_path']):
                             st.image(post['image_path'], use_column_width=True)
-
+                        
                         if post['video_path'] and os.path.exists(post['video_path']):
                             st.video(post['video_path'])
-
+                        
                         st.markdown("---")
-
+        
         with tab2:
             st.subheader(get_text('create_post', selected_lang))
-
+            
             with st.form("post_form"):
                 farmer_name = st.text_input(get_text('your_name', selected_lang), value=user['farmer_name'])
                 content = st.text_area(
-                    get_text('share_experience', selected_lang),
+                    get_text('share_experience', selected_lang), 
                     placeholder="Share your experience..."
                 )
-
+                
                 col1, col2 = st.columns(2)
                 with col1:
                     image_file = st.file_uploader(get_text('attach_photo', selected_lang), type=['jpg', 'jpeg', 'png'])
                 with col2:
                     video_file = st.file_uploader(get_text('attach_video', selected_lang), type=['mp4'])
-
+                
                 submitted = st.form_submit_button(get_text('post', selected_lang), type="primary")
-
+                
                 if submitted:
                     if not content:
                         st.error("Please enter content!")
                     else:
                         image_path = None
                         video_path = None
-
+                        
                         if image_file:
                             is_valid, msg = validate_image(image_file)
                             if not is_valid:
                                 st.error(f"Image error: {msg}")
                                 st.stop()
                             image_path = save_uploaded_file(image_file, IMAGES_DIR)
-
+                        
                         if video_file:
                             is_valid, msg = validate_video(video_file)
                             if not is_valid:
                                 st.error(f"Video error: {msg}")
                                 st.stop()
                             video_path = save_uploaded_file(video_file, VIDEOS_DIR)
-
+                        
                         post_id = create_post(farmer_name, content, image_path, video_path)
                         st.success("Posted successfully!")
                         st.balloons()
                         st.rerun()
-
-    # =========================================================================
+    
+    # =============================================================================
     # GOVERNMENT SCHEMES - NO VOICE
-    # =========================================================================
+    # =============================================================================
     elif page == get_text('schemes', selected_lang):
         st.header(get_text('schemes', selected_lang))
-
+        
         scheme_query = st.text_input(
             get_text('ask_scheme', selected_lang),
             placeholder="e.g., PM-KISAN, Soil Health Card..."
         )
-
+        
         if st.button(get_text('search', selected_lang), type="primary") and scheme_query:
             with st.spinner("🏛️ Fetching..."):
                 info = ai_service.get_government_scheme_info(scheme_query, selected_lang)
-
+                
                 st.markdown("---")
                 st.markdown(info)
-
+        
         st.markdown("---")
         st.subheader(get_text('popular_schemes', selected_lang))
-
+        
         schemes = [
             ("PM-KISAN", "Pradhan Mantri Kisan Samman Nidhi"),
             ("Soil Health Card", "Free soil testing"),
@@ -1706,7 +1738,7 @@ def run_main_app(user):
             ("MIDH", "Horticulture Mission"),
             ("NMOOP", "Oilseeds Mission")
         ]
-
+        
         cols = st.columns(3)
         for idx, (short_name, full_name) in enumerate(schemes):
             with cols[idx % 3]:
@@ -1719,25 +1751,25 @@ def run_main_app(user):
                 if st.button(f"{get_text('search', selected_lang)} {short_name}", key=f"scheme_{idx}"):
                     st.session_state.scheme_query = short_name
                     st.rerun()
-
-    # =========================================================================
+    
+    # =============================================================================
     # ORGANIC PRODUCTS - NO VOICE
-    # =========================================================================
+    # =============================================================================
     elif page == get_text('products', selected_lang):
         st.header(get_text('products', selected_lang))
-
+        
         tab1, tab2 = st.tabs([get_text('browse_products', selected_lang), get_text('list_product', selected_lang)])
-
+        
         with tab1:
             st.subheader(get_text('browse_products', selected_lang))
-
+            
             search = st.text_input(get_text('search', selected_lang))
-
+            
             if search:
                 products = search_products(search)
             else:
                 products = get_all_products(limit=50)
-
+            
             if not products:
                 st.info("No products listed yet!")
             else:
@@ -1753,24 +1785,24 @@ def run_main_app(user):
                             <p><strong>{get_text('phone', selected_lang)}:</strong> &#128222; {product['phone_number']}</p>
                         </div>
                         """, unsafe_allow_html=True)
-
+        
         with tab2:
             st.subheader(get_text('list_product', selected_lang))
-
+            
             with st.form("product_form"):
                 col1, col2 = st.columns(2)
-
+                
                 with col1:
                     farmer_name = st.text_input(get_text('your_name', selected_lang), value=user['farmer_name'])
                     product_name = st.text_input(get_text('product_name', selected_lang), placeholder="e.g., Organic Tomatoes")
                     quantity = st.text_input(get_text('quantity', selected_lang), placeholder="e.g., 50 kg")
-
+                
                 with col2:
                     location = st.text_input(get_text('location', selected_lang), value=user['location'])
                     phone = st.text_input(get_text('phone', selected_lang), value=user['mobile_email'])
-
+                
                 submitted = st.form_submit_button(get_text('list', selected_lang), type="primary")
-
+                
                 if submitted:
                     if not all([farmer_name, product_name, quantity, location, phone]):
                         st.error("Please fill all fields!")
@@ -1781,12 +1813,12 @@ def run_main_app(user):
                         st.success("Listed successfully!")
                         st.balloons()
                         st.rerun()
-
-    # =========================================================================
+    
+    # =============================================================================
     # FOOTER - All Languages, Copyright 2026
-    # =========================================================================
+    # =============================================================================
     ft = TRANSLATIONS.get(selected_lang, TRANSLATIONS['en'])
-
+    
     st.markdown("---")
     st.markdown(f"""
     <div class="km-footer">
@@ -1797,3 +1829,4 @@ def run_main_app(user):
         <p class="km-copy">{ft['copyright']}</p>
     </div>
     """, unsafe_allow_html=True)
+                    
